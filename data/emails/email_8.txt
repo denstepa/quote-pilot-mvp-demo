@@ -1,0 +1,15 @@
+To: contact@quotepilot.com
+Subject: Urgent
+
+Hello Quotepilot,
+
+We'd like to plan a shipment from Berlin to Puebla:
+
+Company: Siemens
+Pickup: July 4, 2024, 10:00
+Delivery: on or before July 13th
+Dimensions: 100 x 120 x 150 cm
+Weight: 500 kg
+Origin: Am Ludwigspl. 18, 66117 Saarbrücken
+Destination: Av. San Lorenzo Almecatla 16, Sanctorum, Mexiko
+Contact: siemens.shipping@siemens.com 

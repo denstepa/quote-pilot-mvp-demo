@@ -1,0 +1,19 @@
+To: contact@quotepilot.com
+Subject: Transport Planning – Siemens – Berlin to Sanctorum
+
+Dear Quotepilot,
+
+We'd like to plan a shipment from Berlin to Puebla:
+
+Company: Siemens
+Pickup: July 4, 2025, 10:00
+Delivery Date: TBD
+Dimensions: 100 x 120 x 150 cm
+Weight: 500 kg
+Origin: Am Ludwigspl. 18, 66117 Saarbrücken
+Destination: Av. San Lorenzo Almecatla 16, Sanctorum, Mexiko
+Contact: siemens.shipping@siemens.com
+Note: The receiving team in Mexico hasn't confirmed the delivery date yet — is that a blocker?
+
+Best regards,
+Siemens Logistics 

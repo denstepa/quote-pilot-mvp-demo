@@ -11,5 +11,58 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_POSTGRES_URL")
+}
+
+model Request {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Raw email data
+  rawBody     String   @db.Text @map("raw_body")
+  subject     String
+  from        String
+  to          String
+
+  // Parsed shipping details
+  company     String
+  pickupDate  DateTime? @map("pickup_date")
+  deliveryDate DateTime? @map("delivery_date")
+  
+  // Dimensions and weight
+  height      Float?
+  width       Float?
+  length      Float?
+  weight      Float?
+
+  // Addresses
+  originAddress      String @map("origin_address")
+  destinationAddress String @map("destination_address")
+  
+  // Contact information
+  contactEmail       String? @map("contact_email")
+
+  // Additional metadata
+  status            EmailStatus @default(PENDING)
+  priority          Priority    @default(NORMAL)
+  notes             String?     @db.Text
+
+  @@map("requests")
+}
+
+enum EmailStatus {
+  PENDING
+  PROCESSING
+  QUOTED
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }

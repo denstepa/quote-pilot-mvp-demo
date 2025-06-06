@@ -1,0 +1,155 @@
+Email 1
+To: contact@quotepilot.com
+Subject: Transport Request – Siemens – Pickup Berlin, Delivery Guadalajara
+
+Dear Quotepilot Team,
+
+We would like to request transport for the following shipment:
+
+Company: Siemens
+Pickup Date & Time: 24.06.2025, 09:00
+Delivery Date & Time: 08.07.2025, 14:00
+Dimensions (H x W x L): 120 x 80 x 150 cm
+Weight: 450 kg
+Origin Address: Brunnenstraße 19-21, 10119 Berlin, Germany
+Delivery Address: Vallarta Nte., 44690 Guadalajara, Jalisco, Mexiko
+Contact Email: logistics@siemens.com
+Looking forward to your confirmation and quote.
+
+Best regards,
+Logistics Team – Siemens
+
+
+Email 2
+To: contact@quotepilot.com
+Subject: Urgent Transport Inquiry – Bosch – Stuttgart to Mexico City
+
+Dear Quotepilot,
+
+We require freight transport for an upcoming shipment:
+
+Company: Bosch
+Pickup Date & Time: 28.06.2025, 13:00
+Delivery Date & Time: 13.07.2025, 16:00
+Dimensions: 100 x 120 x 200 cm
+Weight: 600 kg
+Origin Address: Borsigstraße 14, 70469 Stuttgart, Germany
+Delivery Address: Lomas de Chapultepec III Secc, Miguel Hidalgo, 11000 Mexico City, Mexiko
+Contact Email: export@bosch.com
+Please confirm availability and provide a cost estimate.
+
+Regards,
+Shipping Department – Bosch
+
+
+Email 3
+To: contact@quotepilot.com
+Subject: Transport inquiry – Munich to Mexico City
+
+Hello Quotepilot,
+
+We’re planning a shipment from Munich to Mexico City and would like a quote + availability.
+
+Pickup around July 5th at 14:00, delivery target: before July 22nd, say by noon.
+Box size: 100 cm high, 80 cm wide, 170 cm long.
+Weight is 490 kg.
+
+Ship from: Werner-von-Siemens-Straße 1, 80333 München
+Ship to: Lomas de Chapultepec III Secc, Miguel Hidalgo, 11000 Mexico City, Mexico
+Contact email: export.mx@rohde-schwarz.com
+
+Thanks!
+R&S Logistics
+
+
+Email 4
+To: contact@quotepilot.com
+Subject: Freight booking – Wolfsburg → Sanctorum
+
+Hi there,
+
+Could you slot in a cargo movement for us?
+
+Company: Heraeus
+Pickup: June 27th, 2025, any time before 14:00
+Delivery: on or before July 13th
+Size: 95 x 85 x 160 cm
+Weight: ~460 kg
+Departure: Berliner Ring 2, 38440 Wolfsburg
+Arrival: Av. San Lorenzo Almecatla 16, Sanctorum, Pue., Mexico
+Email contact: international@heraeus.com
+Looking forward to your confirmation.
+Best regards,
+Heraeus International Logistics
+
+
+
+
+Email 5
+To: contact@quotepilot.com
+Subject: Transport Planning – Siemens – Berlin to Sanctorum
+
+Dear Quotepilot,
+
+We’d like to plan a shipment from Berlin to Puebla:
+
+Company: Siemens
+Pickup: July 4, 2025, 10:00
+Delivery Date: TBD
+Dimensions: 100 x 120 x 150 cm
+Weight: 500 kg
+Origin: Am Ludwigspl. 18, 66117 Saarbrücken
+Destination: Av. San Lorenzo Almecatla 16, Sanctorum, Mexiko
+Contact: siemens.shipping@siemens.com
+Note: The receiving team in Mexico hasn't confirmed the delivery date yet — is that a blocker?
+
+Best regards,
+Siemens Logistics
+
+
+Email 6
+To: contact@quotepilot.com
+Subject: Another Transport inquiry – Munich to Mexico City
+
+Hello Quotepilot,
+
+We’re planning a shipment from Munich to Mexico City and would like a quote + availability.
+
+Pickup around July 10th at 14:00,
+
+delivery target: before July 31nd
+Box size: 100 cm high, 80 cm wide, 170 cm long.
+
+Ship from: Sandstraße 28, 80335 München
+Ship to: Lomas de Chapultepec III Secc, Miguel Hidalgo, 11000 Mexico City, Mexico
+Contact email: export.mx@bosh.com
+
+Thanks!
+Bosh Logistics
+
+
+Email 7
+To: contact@quotepilot.com
+Subject: Another Transport inquiry – Munich to Mexico City
+
+Hello Quotepilot,
+
+How much cost to deliver to Mexico?
+
+
+Email 8
+To: contact@quotepilot.com
+Subject: Urgent
+
+Hello Quotepilot,
+
+We’d like to plan a shipment from Berlin to Puebla:
+
+Company: Siemens
+Pickup: July 4, 2024, 10:00
+Delivery: on or before July 13th
+Dimensions: 100 x 120 x 150 cm
+Weight: 500 kg
+Origin: Am Ludwigspl. 18, 66117 Saarbrücken
+Destination: Av. San Lorenzo Almecatla 16, Sanctorum, Mexiko
+Contact: siemens.shipping@siemens.com
