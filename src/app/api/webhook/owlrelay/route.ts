@@ -81,11 +81,11 @@ export async function POST(req: NextRequest) {
     
     throw new Error("No form data received");
 
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error processing webhook:", e);
     return NextResponse.json(
-      { status: 'error', message: e.message },
-      { status: e.status || 500 }
+      { status: 'error', message: (e as Error).message },
+      { status: (e as { status?: number }).status || 500 }
     );
   }
 }
