@@ -7,29 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2 } from "lucide-react";
-
-interface Request {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  rawBody: string;
-  subject: string;
-  from: string;
-  to: string;
-  company: string;
-  pickupDate: string | null;
-  deliveryDate: string | null;
-  height: number | null;
-  width: number | null;
-  length: number | null;
-  weight: number | null;
-  originAddress: string;
-  destinationAddress: string;
-  contactEmail: string | null;
-  status: string;
-  priority: string;
-  notes: string | null;
-}
+import Routes from "@/components/Routes";
+import { Request } from "@prisma/client";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -88,7 +67,7 @@ export default function RequestDetailPage() {
     });
   };
 
-  const formatDimensions = (request: Request) => {
+  const formatDimensions = (request: any) => {
     const dims = [request.length, request.width, request.height].filter(d => d != null);
     return dims.length > 0 ? `${dims.join(' × ')} cm` : 'N/A';
   };
@@ -130,7 +109,6 @@ export default function RequestDetailPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Requests
         </Button>
-        
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Request Details</h1>
@@ -146,7 +124,6 @@ export default function RequestDetailPage() {
           </div>
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <Card>
@@ -181,11 +158,10 @@ export default function RequestDetailPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Received</label>
-                <p className="text-sm">{formatDate(request.createdAt)}</p>
+                <p className="text-sm">{formatDate(request.createdAt.toISOString())}</p>
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -197,11 +173,11 @@ export default function RequestDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">Pickup Date</label>
-                  <p className="text-sm">{formatDate(request.pickupDate)}</p>
+                  <p className="text-sm">{formatDate(request.pickupDate?.toISOString())}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Delivery Date</label>
-                  <p className="text-sm">{formatDate(request.deliveryDate)}</p>
+                  <p className="text-sm">{formatDate(request.deliveryDate?.toISOString())}</p>
                 </div>
               </div>
               <div>
@@ -220,7 +196,6 @@ export default function RequestDetailPage() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -248,9 +223,8 @@ export default function RequestDetailPage() {
             </CardContent>
           </Card>
         </div>
-
         <div>
-          <Card className="h-full">
+          <Card className="h-[600px]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
@@ -260,13 +234,12 @@ export default function RequestDetailPage() {
                 Raw email content as received from {request.from}
               </CardDescription>
             </CardHeader>
-            <CardContent className="h-full">
+            <CardContent className="">
               <div className="mb-4">
                 <label className="text-sm font-medium text-gray-600">Subject</label>
                 <p className="text-sm font-semibold">{request.subject}</p>
               </div>
-              
-              <ScrollArea className="h-[calc(100vh-300px)] w-full rounded border p-4">
+              <ScrollArea className="h-[400px] w-full rounded border p-4">
                 <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
                   {request.rawBody}
                 </pre>
@@ -274,6 +247,9 @@ export default function RequestDetailPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+      <div className="mt-8">
+        <Routes request={request} />
       </div>
     </div>
   );

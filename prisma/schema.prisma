@@ -47,6 +47,24 @@ model Request {
   priority          Priority    @default(NORMAL)
   notes             String?     @db.Text
 
+  // Geocoding fields
+  originLatitude           Float?   @map("origin_latitude")
+  originLongitude          Float?   @map("origin_longitude")
+  originFormattedAddress   String?  @map("origin_formatted_address")
+  originPlaceId            String?  @map("origin_place_id")
+  originCountryCode        String?  @map("origin_country_code")
+
+  destinationLatitude      Float?   @map("destination_latitude")
+  destinationLongitude     Float?   @map("destination_longitude")
+  destinationFormattedAddress String? @map("destination_formatted_address")
+  destinationPlaceId       String?  @map("destination_place_id")
+  destinationCountryCode   String?  @map("destination_country_code")
+
+  distance                 Float?   // in kilometers
+
+  // Route options
+  routeOptions RouteOption[]
+
   @@map("requests")
 }
 
@@ -225,4 +243,124 @@ model ImportBatch {
   flightSchedules FlightSchedule[] @relation("ImportedFlightSchedules")
   
   @@map("import_batches")
+}
+
+model GeocodingCache {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now()) @map("created_at")
+  lastUpdated     DateTime @updatedAt @map("last_updated")
+  
+  address         String   @unique
+  latitude        Float
+  longitude       Float
+  formattedAddress String  @map("formatted_address")
+  placeId         String   @map("place_id")
+  countryCode     String   @map("country_code")
+
+  @@map("geocoding_cache")
+  @@index([address])
+  @@index([countryCode])
+}
+
+model Airport {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Airport information
+  stationCode String   @unique @map("station_code")
+  name        String
+  countryCode String   @map("country_code")
+  
+  // Location
+  latitude    Float
+  longitude   Float
+  placeId     String   @map("place_id")
+  
+  // Metadata
+  region      String   // "Europe" or "Mexico"
+  
+  @@map("airports")
+  @@index([stationCode])
+  @@index([countryCode])
+  @@index([region])
+}
+
+model RouteOption {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Reference to the original request
+  requestId   String
+  request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  // Route details
+  totalDistance Float?  @map("total_distance") // in kilometers
+  estimatedDuration Float? @map("estimated_duration") // in hours
+  totalPrice    Float?  @map("total_price")
+  currency      String?
+
+  // Status
+  status      RouteStatus @default(INITIALIZED)
+
+  // Segments of this route
+  segments    RouteSegment[]
+
+  @@map("route_options")
+  @@index([requestId])
+}
+
+model RouteSegment {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Reference to the route option
+  routeOptionId String
+  routeOption   RouteOption @relation(fields: [routeOptionId], references: [id], onDelete: Cascade)
+
+  // Segment details
+  segmentType  SegmentType
+  sequence     Int      // Order of the segment in the route
+  
+  // Origin and destination
+  originAirportCode      String?  @map("origin_airport_code")
+  originName      String?  @map("origin_name")
+  originCountryCode      String?  @map("origin_country_code")
+  originLatitude         Float?   @map("origin_latitude")
+  originLongitude        Float?   @map("origin_longitude")
+
+  destinationAirportCode String?  @map("destination_airport_code")
+  destinationName String?  @map("destination_name")
+  destinationCountryCode String?  @map("destination_country_code")
+  destinationLatitude    Float?   @map("destination_latitude")
+  destinationLongitude   Float?   @map("destination_longitude")
+
+  // Transport details
+  distance    Float?    // in kilometers
+  duration    Float?    // in hours
+  price       Float?
+  currency    String?
+
+  // Additional details
+  airline     String?
+  flightNumber String? @map("flight_number")
+  notes       String?
+
+  @@map("route_segments")
+  @@index([routeOptionId])
+}
+
+enum RouteStatus {
+  INITIALIZED
+  CALCULATING_PRICE
+  AVAILABLE
+  SELECTED
+}
+
+enum SegmentType {
+  TRUCKING
+  AIR
+  CUSTOMS
 }
