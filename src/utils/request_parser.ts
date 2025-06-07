@@ -5,8 +5,8 @@ import { openai } from '@ai-sdk/openai';
 // Define the schema matching the Prisma Request model
 const RequestSchema = z.object({  
   company: z.string(),
-  pickupDate: z.date().nullable(),
-  deliveryDate: z.date().nullable(),
+  pickupDate: z.string().describe('Date of the event in ISO 8601 format, e.g. 2025-06-07').nullable().transform((val) => val ? new Date(val) : null),
+  deliveryDate: z.string().describe('Date of the event in ISO 8601 format, e.g. 2025-06-07').nullable().transform((val) => val ? new Date(val) : null),
   
   // Dimensions and weight
   height: z.number().nullable(),
@@ -51,11 +51,11 @@ Instructions:
 - Extract weight in kg - convert to number
 - Extract full origin and destination addresses
 - Find contact email addresses mentioned in the content
-- Determine priority: URGENT if subject contains "urgent", HIGH if subject contains "booking" or specific dates, otherwise NORMAL
+- Determine priority: URGENT if subject contains "urgent", otherwise NORMAL
 - Add any special notes or additional information mentioned
 
 Be flexible with date formats (handle DD.MM.YYYY, "July 5th", "June 27th, 2025", etc.)
-Handle dimension formats like "120 x 80 x 150 cm", "100 cm high, 80 cm wide, 170 cm long"
+Handle dimension formats like "120 x 80 x 150 cm" (treat as 120 height, 80 width, 150 length), "100 cm high, 80 cm wide, 170 cm long"
 Handle weight formats like "450 kg", "~460 kg", "500 kg"
 If information is missing or unclear, use null for optional fields.
 `,

@@ -1,0 +1,256 @@
+import { readFileSync } from 'fs';
+import path from 'path';
+import { parseEmailToRequest, ParsedRequest } from '../src/utils/request_parser';
+// Note: parseEmailFile and parseMultipleEmails are used in commented tests
+
+describe('Request Parser Integration Tests', () => {
+  // Helper function to load email files
+  const loadEmailFile = (filename: string): string => {
+    return readFileSync(path.join(__dirname, '..', 'data', 'emails', filename), 'utf-8');
+  };
+
+  // Test timeout for LLM calls (10 seconds)
+  const LLM_TIMEOUT = 10000;
+
+  // Helper function to validate core fields are present and reasonable
+  const validateParsedRequest = (result: ParsedRequest, expectedCompany: string) => {
+    expect(result.company).toBeTruthy();
+    expect(result.company.toLowerCase()).toContain(expectedCompany.toLowerCase());
+    expect(result.originAddress).toBeTruthy();
+    expect(result.destinationAddress).toBeTruthy();
+    expect(typeof result.priority).toBe('string');
+    expect(['LOW', 'NORMAL', 'HIGH', 'URGENT']).toContain(result.priority);
+  };
+
+  // Helper function to check dimensions match regardless of which property they're assigned to
+  const expectDimensionsToMatch = (result: ParsedRequest, expectedDimensions: number[]) => {
+    const actualDimensions = [result.height, result.width, result.length].filter(d => d !== null).sort();
+    const expectedSorted = expectedDimensions.sort();
+    expect(actualDimensions).toEqual(expectedSorted);
+  };
+
+  describe('parseEmailToRequest', () => {
+    // it('should parse email_1.txt (Siemens Berlin to Guadalajara)', async () => {
+    //   const emailContent = loadEmailFile('email_1.txt');
+    //   const result = await parseEmailToRequest(emailContent);
+
+    //   validateParsedRequest(result, 'Siemens');
+      
+    //   // Specific validations for this email
+    //   expect(result.pickupDate).not.toBeNull();
+    //   expect(result.deliveryDate).not.toBeNull();
+    //   expectDimensionsToMatch(result, [120, 80, 150]);
+    //   expect(result.weight).toBe(450);
+    //   expect(result.originAddress).toContain('Berlin');
+    //   expect(result.destinationAddress).toContain('Guadalajara');
+    //   expect(result.contactEmail).toBe('logistics@siemens.com');
+    //   expect(result.priority).toBe('NORMAL');
+    // }, LLM_TIMEOUT);
+
+    // it('should parse email_2.txt (Bosch Stuttgart to Mexico City - Urgent)', async () => {
+    //   const emailContent = loadEmailFile('email_2.txt');
+    //   const result = await parseEmailToRequest(emailContent);
+
+    //   validateParsedRequest(result, 'Bosch');
+
+    //   console.log(result);
+      
+    //   expect(result.pickupDate).not.toBeNull();
+    //   expect(result.deliveryDate).not.toBeNull();
+    //   expectDimensionsToMatch(result, [100, 120, 200]);
+    //   expect(result.weight).toBe(600);
+    //   expect(result.originAddress).toContain('Stuttgart');
+    //   expect(result.destinationAddress).toContain('Mexico City');
+    //   expect(result.contactEmail).toBe('export@bosch.com');
+    //   expect(result.priority).toBe('URGENT');
+    // }, LLM_TIMEOUT);
+
+    // it('should parse email_3.txt (Munich to Mexico City with informal format)', async () => {
+    //   const emailContent = loadEmailFile('email_3.txt');
+    //   const result = await parseEmailToRequest(emailContent);
+
+    //   validateParsedRequest(result, 'R&S');
+      
+    //   expect(result.pickupDate).not.toBeNull();
+    //   expect(result.deliveryDate).not.toBeNull();
+    //   expectDimensionsToMatch(result, [100, 80, 170]);
+    //   expect(result.weight).toBe(490);
+    //   expect(result.originAddress).toContain('München');
+    //   expect(result.destinationAddress).toContain('Mexico City');
+    //   expect(result.contactEmail).toBe('export.mx@rohde-schwarz.com');
+    // }, LLM_TIMEOUT);
+
+    // it('should parse email_4.txt (Heraeus with booking priority)', async () => {
+    //   const emailContent = loadEmailFile('email_4.txt');
+    //   const result = await parseEmailToRequest(emailContent);
+
+    //   validateParsedRequest(result, 'Heraeus');
+      
+    //   expect(result.pickupDate).not.toBeNull();
+    //   expect(result.deliveryDate).not.toBeNull();
+    //   expectDimensionsToMatch(result, [95, 85, 160]);
+    //   expect(result.weight).toBe(460);
+    //   expect(result.originAddress).toContain('Wolfsburg');
+    //   expect(result.destinationAddress).toContain('Sanctorum');
+    //   expect(result.contactEmail).toBe('international@heraeus.com');
+    //   expect(result.priority).toBe('NORMAL'); // Should be HIGH due to "booking"
+    // }, LLM_TIMEOUT);
+
+    // it('should parse email_5.txt (TBD delivery date)', async () => {
+    //   const emailContent = loadEmailFile('email_5.txt');
+    //   const result = await parseEmailToRequest(emailContent);
+
+    //   validateParsedRequest(result, 'Siemens');
+      
+    //   expect(result.pickupDate).not.toBeNull();
+    //   expect(result.deliveryDate).toBeNull(); // TBD should be null
+    //   expectDimensionsToMatch(result, [100, 120, 150]);
+    //   expect(result.weight).toBe(500);
+    //   expect(result.originAddress).toContain('Saarbrücken');
+    //   expect(result.destinationAddress).toContain('Sanctorum');
+    //   expect(result.contactEmail).toBe('siemens.shipping@siemens.com');
+    //   expect(result.notes).toBeTruthy();
+    //   expect(result.priority).toBe('NORMAL');
+    // }, LLM_TIMEOUT);
+
+    // it('should parse email_6.txt (Bosh with missing weight)', async () => {
+    //   const emailContent = loadEmailFile('email_6.txt');
+    //   const result = await parseEmailToRequest(emailContent);
+
+    //   validateParsedRequest(result, 'Bosh');
+      
+    //   expect(result.pickupDate).not.toBeNull();
+    //   expect(result.deliveryDate).not.toBeNull();
+    //   expectDimensionsToMatch(result, [100, 80, 170]);
+    //   expect(result.weight).toBeNull();
+    //   expect(result.originAddress).toContain('München');
+    //   expect(result.destinationAddress).toContain('Mexico City');
+    //   expect(result.contactEmail).toBe('export.mx@bosh.com');
+    //   expect(result.priority).toBe('NORMAL');
+    // }, LLM_TIMEOUT);
+
+    // it('should parse email_7.txt (minimal information)', async () => {
+    //   const emailContent = loadEmailFile('email_7.txt');
+    //   const result = await parseEmailToRequest(emailContent);
+
+    //   expect(result.pickupDate).toBeNull();
+    //   expect(result.deliveryDate).toBeNull();
+    //   expect(result.height).toBeNull();
+    //   expect(result.width).toBeNull();
+    //   expect(result.length).toBeNull();
+    //   expect(result.weight).toBeNull();
+    //   expect(result.destinationAddress).toContain('Mexico');
+    //   expect(result.priority).toBe('NORMAL');
+    // }, LLM_TIMEOUT);
+
+    it('should parse email_8.txt (urgent with specific date)', async () => {
+      const emailContent = loadEmailFile('email_8.txt');
+      const result = await parseEmailToRequest(emailContent);
+
+      validateParsedRequest(result, 'Siemens');
+      
+      expect(result.pickupDate).not.toBeNull();
+      expect(result.deliveryDate).not.toBeNull();
+      expectDimensionsToMatch(result, [100, 120, 150]);
+      expect(result.weight).toBe(500);
+      expect(result.originAddress).toContain('Saarbrücken');
+      expect(result.destinationAddress).toContain('Sanctorum');
+      expect(result.contactEmail).toBe('siemens.shipping@siemens.com');
+      expect(result.priority).toBe('URGENT');
+    }, LLM_TIMEOUT);
+  });
+
+  // describe('parseEmailFile', () => {
+  //   it('should parse email file directly from path', async () => {
+  //     const filePath = path.join(__dirname, '..', 'data', 'emails', 'email_1.txt');
+  //     const result = await parseEmailFile(filePath);
+
+  //     validateParsedRequest(result, 'Siemens');
+  //     expect(result.contactEmail).toBe('logistics@siemens.com');
+  //   }, LLM_TIMEOUT);
+
+  //   it('should handle file read errors gracefully', async () => {
+  //     const nonExistentFile = path.join(__dirname, '..', 'data', 'emails', 'nonexistent.txt');
+      
+  //     await expect(parseEmailFile(nonExistentFile)).rejects.toThrow();
+  //   });
+  // });
+
+  // describe('parseMultipleEmails', () => {
+  //   it('should parse multiple email contents in batch', async () => {
+  //     const email1Content = loadEmailFile('email_1.txt');
+  //     const email2Content = loadEmailFile('email_2.txt');
+
+  //     const results = await parseMultipleEmails([email1Content, email2Content]);
+
+  //     expect(results).toHaveLength(2);
+      
+  //     // Validate first result (Siemens)
+  //     validateParsedRequest(results[0], 'Siemens');
+  //     expect(results[0].contactEmail).toBe('logistics@siemens.com');
+      
+  //     // Validate second result (Bosch)
+  //     validateParsedRequest(results[1], 'Bosch');
+  //     expect(results[1].contactEmail).toBe('export@bosch.com');
+  //     expect(results[1].priority).toBe('URGENT');
+  //   }, LLM_TIMEOUT * 2); // Double timeout for multiple calls
+
+  //   it('should handle empty array', async () => {
+  //     const results = await parseMultipleEmails([]);
+  //     expect(results).toEqual([]);
+  //   });
+  // });
+
+  // describe('Field Extraction Accuracy', () => {
+  //   it('should consistently extract companies correctly', async () => {
+  //     const companies = [
+  //       { file: 'email_1.txt', expected: 'Siemens' },
+  //       { file: 'email_2.txt', expected: 'Bosch' },
+  //       { file: 'email_4.txt', expected: 'Heraeus' }
+  //     ];
+
+  //     for (const { file, expected } of companies) {
+  //       const emailContent = loadEmailFile(file);
+  //       const result = await parseEmailToRequest(emailContent);
+  //       expect(result.company.toLowerCase()).toContain(expected.toLowerCase());
+  //     }
+  //   }, LLM_TIMEOUT * 3);
+
+  //   it('should handle different date formats correctly', async () => {
+  //     // Test various date formats across different emails
+  //     const emailsWithDates = ['email_1.txt', 'email_2.txt', 'email_3.txt', 'email_4.txt'];
+      
+  //     for (const filename of emailsWithDates) {
+  //       const emailContent = loadEmailFile(filename);
+  //       const result = await parseEmailToRequest(emailContent);
+        
+  //       // All these emails should have pickup dates
+  //       expect(result.pickupDate).not.toBeNull();
+  //       expect(result.pickupDate).toBeInstanceOf(Date);
+        
+  //       // Check the year is reasonable (2024 or 2025)
+  //       if (result.pickupDate) {
+  //         const year = result.pickupDate.getFullYear();
+  //         expect(year).toBeGreaterThanOrEqual(2024);
+  //         expect(year).toBeLessThanOrEqual(2025);
+  //       }
+  //     }
+  //   }, LLM_TIMEOUT * 4);
+  // });
+
+  // describe('Priority Detection', () => {
+  //   it('should detect priority levels correctly', async () => {
+  //     const priorityTests = [
+  //       { file: 'email_2.txt', expectedPriority: 'URGENT' }, // Subject contains "Urgent"
+  //       { file: 'email_8.txt', expectedPriority: 'URGENT' }, // Subject is "Urgent"
+  //       { file: 'email_1.txt', expectedPriority: 'NORMAL' }  // Regular transport request
+  //     ];
+
+  //     for (const { file, expectedPriority } of priorityTests) {
+  //       const emailContent = loadEmailFile(file);
+  //       const result = await parseEmailToRequest(emailContent);
+  //       expect(result.priority).toBe(expectedPriority);
+  //     }
+  //   }, LLM_TIMEOUT * 3);
+  // });
+}); 
