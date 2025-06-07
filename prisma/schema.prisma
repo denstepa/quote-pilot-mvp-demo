@@ -65,3 +65,164 @@ enum Priority {
   HIGH
   URGENT
 }
+
+// === RATE SHEET MODELS ===
+
+model TruckingRate {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Location information
+  origin      String
+  destination String
+  
+  // Pricing
+  basePrice   Float    @map("base_price")
+  kmPrice     Float    @map("km_price")
+  currency    String
+  
+  // Metadata
+  region      String   // "Europe" or "Mexico"
+  notes       String?
+  
+  // Import tracking
+  importBatchId String?      @map("import_batch_id")
+  importBatch   ImportBatch? @relation("ImportedTruckingRates", fields: [importBatchId], references: [id])
+  
+  @@map("trucking_rates")
+  @@index([origin, destination])
+  @@index([region])
+}
+
+model AirportRate {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Airport information
+  stationCode String   @map("station_code")
+  countryCode String   @map("country_code")
+  airline     String?
+  
+  // Handling fees
+  exportHandling   Float?  @map("export_handling")
+  exportCustoms    Float?  @map("export_customs")
+  importHandling   Float?  @map("import_handling")
+  importCustoms    Float?  @map("import_customs")
+  currency         String
+  
+  // Metadata
+  region      String   // "Europe" or "Mexico"
+  serviceType String   @map("service_type") // "Export" or "Import"
+  notes       String?
+  
+  // Import tracking
+  importBatchId String?      @map("import_batch_id")
+  importBatch   ImportBatch? @relation("ImportedAirportRates", fields: [importBatchId], references: [id])
+  
+  @@map("airport_rates")
+  @@index([stationCode, countryCode])
+  @@index([airline])
+  @@index([region])
+}
+
+model AirlineRate {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Route information
+  stationCode         String @map("station_code")
+  originCountryCode   String @map("origin_country_code")
+  destinationCountryCode String @map("destination_country_code")
+  airline             String
+  
+  // Base pricing
+  fuelChargePerKg     Float  @map("fuel_charge_per_kg")
+  basePrice           Float  @map("base_price")
+  currency            String
+  
+  // Weight tiers - storing as individual fields for easier querying
+  priceUnder45kg      Float? @map("price_under_45kg")
+  priceUnder100kg     Float? @map("price_under_100kg")
+  priceUnder250kg     Float? @map("price_under_250kg")
+  priceUnder300kg     Float? @map("price_under_300kg")
+  priceUnder500kg     Float? @map("price_under_500kg")
+  priceUnder1000kg    Float? @map("price_under_1000kg")
+  priceOver1000kg     Float? @map("price_over_1000kg")
+  
+  // Metadata
+  notes       String?
+  
+  // Import tracking
+  importBatchId String?      @map("import_batch_id")
+  importBatch   ImportBatch? @relation("ImportedAirlineRates", fields: [importBatchId], references: [id])
+  
+  @@map("airline_rates")
+  @@index([stationCode, originCountryCode, destinationCountryCode])
+  @@index([airline])
+}
+
+model FlightSchedule {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Flight information
+  airline       String
+  flightNumber  String   @map("flight_number")
+  originCode    String   @map("origin_code")
+  destinationCode String @map("destination_code")
+  
+  // Timing
+  departureTime String?  @map("departure_time") // Formatted time string
+  arrivalTime   String?  @map("arrival_time")   // Formatted time string
+  
+  // Schedule (for Lufthansa - weekly schedule)
+  monday        Boolean  @default(false)
+  tuesday       Boolean  @default(false)
+  wednesday     Boolean  @default(false)
+  thursday      Boolean  @default(false)
+  friday        Boolean  @default(false)
+  saturday      Boolean  @default(false)
+  sunday        Boolean  @default(false)
+  
+  // Specific dates (for Aeromexico)
+  departureDate DateTime? @map("departure_date")
+  
+  // Metadata
+  scheduleType  String   @map("schedule_type") // "weekly" or "specific"
+  carrier       String   // "LH" or "AM"
+  notes         String?
+  
+  // Import tracking
+  importBatchId String?      @map("import_batch_id")
+  importBatch   ImportBatch? @relation("ImportedFlightSchedules", fields: [importBatchId], references: [id])
+  
+  @@map("flight_schedules")
+  @@index([airline, flightNumber])
+  @@index([originCode, destinationCode])
+  @@index([carrier])
+}
+
+// Import metadata tracking
+model ImportBatch {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  fileName    String   @map("file_name")
+  sheetName   String   @map("sheet_name")
+  totalRows   Int      @map("total_rows")
+  processedRows Int    @map("processed_rows")
+  successfulRows Int   @map("successful_rows")
+  errorRows   Int      @map("error_rows")
+  
+  // Relationships to track what was imported
+  truckingRates   TruckingRate[]   @relation("ImportedTruckingRates")
+  airportRates    AirportRate[]    @relation("ImportedAirportRates") 
+  airlineRates    AirlineRate[]    @relation("ImportedAirlineRates")
+  flightSchedules FlightSchedule[] @relation("ImportedFlightSchedules")
+  
+  @@map("import_batches")
+}
