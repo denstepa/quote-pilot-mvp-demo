@@ -1,5 +1,5 @@
 import { Request, PrismaClient, RouteStatus, RouteOption } from '@prisma/client';
-import { buildRouteOptions } from './route_segment_builder';
+import { findFlightOptions } from './route_segment_builder';
 
 const prisma = new PrismaClient();
 
@@ -8,19 +8,17 @@ const prisma = new PrismaClient();
  * @param request The request containing origin and destination coordinates
  * @returns Array of route options with airport pairs
  */
-export async function findAvailableRoutes(request: Request): Promise<RouteOption[]> {
+export async function buildAvailableRoutes(request: Request): Promise<RouteOption[]> {
   if (!request.originLatitude || !request.originLongitude || 
       !request.destinationLatitude || !request.destinationLongitude) {
     throw new Error('Request is missing geocoding information');
   }
 
-  // Build route options
-  const airportPairs = await buildRouteOptions(request);
+  const availableFlights = await findFlightOptions(request);
   const routeOptions: RouteOption[] = [];
 
-  // Process each airport pair one by one
-  for (const { origin: originAirport, destination: destinationAirport } of airportPairs) {
-    // Create route option in database
+  for (const { origin: originAirport, destination: destinationAirport, airline } of availableFlights) {
+
     const routeOption = await prisma.routeOption.create({
       data: {
         requestId: request.id,
@@ -50,6 +48,7 @@ export async function findAvailableRoutes(request: Request): Promise<RouteOption
               destinationCountryCode: destinationAirport.countryCode,
               destinationLatitude: destinationAirport.latitude,
               destinationLongitude: destinationAirport.longitude,
+              airline: airline,
             },
             {
               segmentType: 'TRUCKING',

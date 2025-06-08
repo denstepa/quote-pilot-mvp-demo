@@ -5,13 +5,16 @@ const prisma = new PrismaClient();
 export interface GeoCoordinates {
   latitude: number;
   longitude: number;
+}
+
+export interface GeoCoordinatesWithAddress extends GeoCoordinates {
   formattedAddress: string;
   placeId: string;
   countryCode: string;
 }
 
 export interface GeocodingResult {
-  coordinates: GeoCoordinates;
+  coordinates: GeoCoordinatesWithAddress;
   error?: string;
 }
 
@@ -64,7 +67,7 @@ export async function geocodeAddress(address: string): Promise<GeocodingResult> 
     }
 
     const result = data.results[0];
-    const coordinates: GeoCoordinates = {
+    const coordinates: GeoCoordinatesWithAddress = {
       latitude: result.geometry.location.lat,
       longitude: result.geometry.location.lng,
       formattedAddress: result.formatted_address,
@@ -101,7 +104,7 @@ export async function geocodeAddresses(addresses: string[]): Promise<GeocodingRe
 /**
  * Get cached coordinates for an address
  */
-async function getCachedCoordinates(address: string): Promise<GeoCoordinates | null> {
+async function getCachedCoordinates(address: string): Promise<GeoCoordinatesWithAddress | null> {
   const cached = await prisma.geocodingCache.findUnique({
     where: { address }
   });
@@ -120,7 +123,7 @@ async function getCachedCoordinates(address: string): Promise<GeoCoordinates | n
 /**
  * Cache coordinates for an address
  */
-async function cacheCoordinates(address: string, coordinates: GeoCoordinates): Promise<void> {
+async function cacheCoordinates(address: string, coordinates: GeoCoordinatesWithAddress): Promise<void> {
   await prisma.geocodingCache.upsert({
     where: { address },
     update: {
@@ -156,23 +159,39 @@ function extractCountryCode(addressComponents: GoogleAddressComponent[]): string
 /**
  * Calculate distance between two coordinates in kilometers
  */
-export function calculateDistance(
+export async function calculateDistanceBetweenCoordinates(
   origin: GeoCoordinates,
   destination: GeoCoordinates
-): number {
-  const R = 6371; // Earth's radius in kilometers
-  const dLat = toRad(destination.latitude - origin.latitude);
-  const dLon = toRad(destination.longitude - origin.longitude);
-  
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(toRad(origin.latitude)) * Math.cos(toRad(destination.latitude)) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
+): Promise<number> {
+  try {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      throw new Error('Google Maps API key is not configured');
+    }
 
-function toRad(degrees: number): number {
-  return degrees * (Math.PI / 180);
-} 
+    // Construct origin and destination coordinates
+    const originString = `${origin.latitude},${origin.longitude}`;
+    const destinationString = `${destination.latitude},${destination.longitude}`;
+
+    // Call Google Maps Distance Matrix API
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originString}&destinations=${destinationString}&mode=driving&key=${apiKey}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status !== 'OK') {
+      throw new Error(`Distance Matrix API error: ${data.status}`);
+    }
+
+    if (!data.rows?.[0]?.elements?.[0]?.distance?.value) {
+      throw new Error('No distance data returned from API');
+    }
+
+    // Convert meters to kilometers
+    const distanceInMeters = data.rows[0].elements[0].distance.value;
+    return distanceInMeters / 1000;
+  } catch (error) {
+    console.error('Error calculating route segment distance:', error);
+    throw error;
+  }
+}

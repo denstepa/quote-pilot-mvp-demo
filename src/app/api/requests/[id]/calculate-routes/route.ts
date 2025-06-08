@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
-import { findAvailableRoutes } from "@/utils/routing";
+import { buildAvailableRoutes } from "@/utils/routing";
 
 export async function POST(
   request: NextRequest,
@@ -36,7 +36,7 @@ export async function POST(
     }
 
     // Calculate routes
-    const routes = await findAvailableRoutes(requestData);
+    const routes = await buildAvailableRoutes(requestData);
 
     return NextResponse.json(routes);
   } catch (error) {

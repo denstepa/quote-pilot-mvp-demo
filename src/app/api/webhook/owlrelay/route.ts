@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
 import { parseEmailToRequest } from "@/utils/request_parser";
 import { parseEmailFormData } from "@/utils/email-parser";
+import { geocodeAddress } from "@/utils/geocoding/google_geocoder";
 
 
 export async function POST(req: NextRequest) {
@@ -30,6 +31,18 @@ export async function POST(req: NextRequest) {
       console.log("Parsing email content for transport request...");
       const parsedRequest = await parseEmailToRequest(`Subject: ${emailMetadata.subject}\n\n${emailContent}`);
       
+      // Geocode both addresses
+      const [originResult, destinationResult] = await Promise.all([
+        geocodeAddress(parsedRequest.originAddress),
+        geocodeAddress(parsedRequest.destinationAddress)
+      ]);
+
+      if (originResult.error || destinationResult.error) {
+        throw new Error(
+          `Geocoding failed: ${originResult.error || ''} ${destinationResult.error || ''}`
+        );
+      }
+
       console.log("Parsed request data:", parsedRequest);
 
       // Convert parsed data to Prisma-compatible format and save to database
@@ -63,6 +76,18 @@ export async function POST(req: NextRequest) {
           status: 'PENDING',
           priority: parsedRequest.priority,
           notes: parsedRequest.notes,
+
+          // Geocoding fields
+          originLatitude: originResult.coordinates.latitude,
+          originLongitude: originResult.coordinates.longitude,
+          originFormattedAddress: originResult.coordinates.formattedAddress,
+          originPlaceId: originResult.coordinates.placeId,
+          originCountryCode: originResult.coordinates.countryCode,
+          destinationLatitude: destinationResult.coordinates.latitude,
+          destinationLongitude: destinationResult.coordinates.longitude,
+          destinationFormattedAddress: destinationResult.coordinates.formattedAddress,
+          destinationPlaceId: destinationResult.coordinates.placeId,
+          destinationCountryCode: destinationResult.coordinates.countryCode,
         }
       });
       

@@ -8,22 +8,30 @@ interface AirportPair {
   destination: Airport;
 }
 
+interface AirportPairWithAirline extends AirportPair {
+  airline: string;
+}
+
 /**
- * Check if there are any flights available between two airports
- * @param originCode Origin airport code
- * @param destinationCode Destination airport code
+ * Check if there are any flights available between two airports for a specific airline
+ * @param origin Origin airport
+ * @param destination Destination airport
+ * @param airline Airline code
  * @returns true if there are flights available, false otherwise
  */
-async function hasFlightsBetweenAirports(origin: Airport, destination: Airport): Promise<boolean> {
-  const flights = await prisma.flightSchedule.findMany({
+async function hasFlightsBetweenAirports(origin: Airport, destination: Airport): Promise<string[]> {
+  const flights = await prisma.scheduledFlight.findMany({
     where: {
       originCode: origin.stationCode,
       destinationCode: destination.stationCode,
     },
-    take: 1,
+    select: {
+      airline: true,
+    },
+    distinct: ['airline'],
   });
 
-  return flights.length > 0;
+  return flights.map(flight => flight.airline);
 }
 
 /**
@@ -54,9 +62,9 @@ async function buildAirportPairs(
 /**
  * Build route options for a request
  * @param request The request to build route options for
- * @returns List of airport pairs with flight availability
+ * @returns List of airport pairs with airline availability
  */
-export async function buildRouteOptions(request: Request): Promise<AirportPair[]> {
+export async function findFlightOptions(request: Request): Promise<AirportPairWithAirline[]> {
   if (!request.originLatitude || !request.originLongitude || 
       !request.destinationLatitude || !request.destinationLongitude) {
     throw new Error('Request is missing geocoding information');
@@ -77,7 +85,16 @@ export async function buildRouteOptions(request: Request): Promise<AirportPair[]
 
   // Build and filter airport pairs
   const airportPairs = await buildAirportPairs(originAirports, destinationAirports);
-  const airportPairsWithFlights = airportPairs.filter(pair => hasFlightsBetweenAirports(pair.origin, pair.destination));
+  const airportPairsWithAirlines: AirportPairWithAirline[] = [];
+  for (const pair of airportPairs) {
+    const airlines = await hasFlightsBetweenAirports(pair.origin, pair.destination);
+    airlines.forEach(airline => {
+      airportPairsWithAirlines.push({
+        ...pair,
+        airline: airline,
+      });
+    });
+  } 
 
-  return airportPairsWithFlights;
+  return airportPairsWithAirlines;
 }
