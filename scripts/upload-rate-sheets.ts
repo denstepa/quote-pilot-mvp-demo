@@ -1,11 +1,12 @@
 import * as XLSX from 'xlsx';
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
+import { parseTimeToString, parseAMDate } from '../src/utils/parser/time-parser';
 
 const prisma = new PrismaClient();
 
 interface RateSheetData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface UploadResult {
@@ -14,44 +15,6 @@ interface UploadResult {
   successfulRows: number;
   errorRows: number;
   batchId: string;
-}
-
-// Helper functions
-function formatTime(excelTime: unknown): string {
-  if (typeof excelTime === 'number') {
-    const hours = Math.floor(excelTime * 24);
-    const minutes = Math.floor((excelTime * 24 * 60) % 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  }
-  return String(excelTime);
-}
-
-function formatAMTime(timeValue: unknown): string {
-  if (typeof timeValue === 'number') {
-    const timeStr = timeValue.toString();
-    if (timeStr.length >= 3) {
-      const hours = timeStr.slice(0, -2);
-      const minutes = timeStr.slice(-2);
-      return `${hours}:${minutes}`;
-    }
-  }
-  return String(timeValue);
-}
-
-function parseAMDate(dateStr: unknown): Date | null {
-  try {
-    if (typeof dateStr === 'string' && dateStr.includes('.')) {
-      // Format: "19.06.25" -> "2025-06-19"
-      const parts = dateStr.split('.');
-      const day = parts[0];
-      const month = parts[1];
-      const year = '20' + parts[2];
-      return new Date(`${year}-${month}-${day}`);
-    }
-  } catch (error) {
-    console.warn('Could not parse date:', dateStr);
-  }
-  return null;
 }
 
 // Data processors for each model
@@ -71,8 +34,8 @@ async function processTruckingRates(jsonData: RateSheetData[], sheetName: string
         data: {
           origin: String(row.Origin),
           destination: String(row.Destination),
-          basePrice: parseFloat(row['Base Price']) || 0,
-          kmPrice: parseFloat(row['km Price']) || 0,
+          basePrice: parseFloat(String(row['Base Price'])) || 0,
+          kmPrice: parseFloat(String(row['km Price'])) || 0,
           currency: String(row.Currency || 'EUR'),
           region,
           notes: `Original data: ${JSON.stringify(row)}`,
@@ -114,10 +77,10 @@ async function processAirportRates(jsonData: RateSheetData[], sheetName: string,
           stationCode: String(row['Station Code']),
           countryCode: String(row['Country Code']),
           airline: row.Airline ? String(row.Airline) : null,
-          exportHandling: serviceType === 'Export' ? (parseFloat(row['Export Handling']) || null) : null,
-          exportCustoms: serviceType === 'Export' ? (parseFloat(row['Export Customs ']) || null) : null,
-          importHandling: serviceType === 'Import' ? (parseFloat(row['Import Handling']) || null) : null,
-          importCustoms: serviceType === 'Import' ? (parseFloat(row['Import Customs ']) || null) : null,
+          exportHandling: serviceType === 'Export' ? (parseFloat(String(row['Export Handling'])) || null) : null,
+          exportCustoms: serviceType === 'Export' ? (parseFloat(String(row['Export Customs '])) || null) : null,
+          importHandling: serviceType === 'Import' ? (parseFloat(String(row['Import Handling'])) || null) : null,
+          importCustoms: serviceType === 'Import' ? (parseFloat(String(row['Import Customs '])) || null) : null,
           currency: String(row.Currency || (region === 'Europe' ? 'EUR' : 'USD')),
           region,
           serviceType,
@@ -146,7 +109,7 @@ async function processAirlineRates(sheet: XLSX.WorkSheet, sheetName: string, bat
   console.log(`Processing airline rates from ${sheetName}...`);
   
   // Use array format to properly handle multi-row headers
-  const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+  const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
   
   let successfulRows = 0;
   let errorRows = 0;
@@ -213,7 +176,7 @@ async function processFlightSchedules(jsonData: RateSheetData[], sheetName: stri
   let validRows: RateSheetData[] = [];
   
   if (sheetName.includes('Lufthansa')) {
-    // Lufthansa format - Excel uses __EMPTY, __EMPTY_1, etc. for unnamed columns
+    // Lufthansa format - weekly schedules
     validRows = jsonData.filter(row => 
       // Check for actual flight data rows (not header rows)
       row.__EMPTY && 
@@ -232,35 +195,34 @@ async function processFlightSchedules(jsonData: RateSheetData[], sheetName: stri
     for (const row of validRows) {
       try {
         // Handle different column formats for Lufthansa data
-        let airline, flightNumber, originCode, destinationCode, departureTime, arrivalTime;
-        let monday, tuesday, wednesday, thursday, friday, saturday, sunday;
-        
-        // Use the __EMPTY column format that Excel generates
-        airline = String(row.__EMPTY || 'LH');
-        flightNumber = String(row.__EMPTY_1 || '');
-        originCode = String(row.__EMPTY_2 || '');
-        destinationCode = String(row.__EMPTY_3 || '');
-        departureTime = formatTime(row.__EMPTY_4);
-        arrivalTime = formatTime(row.__EMPTY_5);
+        const airline = String(row.__EMPTY || 'LH');
+        const flightNumber = String(row.__EMPTY_1 || '');
+        const originCode = String(row.__EMPTY_2 || '');
+        const destinationCode = String(row.__EMPTY_3 || '');
+        const depTimeParsed = parseTimeToString(row.__EMPTY_4);
+        const arrTimeParsed = parseTimeToString(row.__EMPTY_5);
+
+        console.log('depTimeParsed', row.__EMPTY_4, depTimeParsed);
+        console.log('arrTimeParsed', row.__EMPTY_5, arrTimeParsed);
         
         // Days of the week mapping based on Excel column structure
-        // From the sample: "Days on which the flight takes place" can be "x" for Monday
-        monday = !!(row['Days on which the flight takes place'] === 'x');
-        tuesday = !!(row.__EMPTY_6 === 'x');
-        wednesday = !!(row.__EMPTY_7 === 'x');
-        thursday = !!(row.__EMPTY_8 === 'x');
-        friday = !!(row.__EMPTY_9 === 'x');
-        saturday = !!(row.__EMPTY_10 === 'x');
-        sunday = !!(row.__EMPTY_11 === 'x');
+        const monday = !!(row['Days on which the flight takes place'] === 'x');
+        const tuesday = !!(row.__EMPTY_6 === 'x');
+        const wednesday = !!(row.__EMPTY_7 === 'x');
+        const thursday = !!(row.__EMPTY_8 === 'x');
+        const friday = !!(row.__EMPTY_9 === 'x');
+        const saturday = !!(row.__EMPTY_10 === 'x');
+        const sunday = !!(row.__EMPTY_11 === 'x');
         
-        await prisma.flightSchedule.create({
+        // Create weekly flight schedule
+        await prisma.weeklyFlightSchedule.create({
           data: {
             airline,
             flightNumber,
             originCode,
             destinationCode,
-            departureTime,
-            arrivalTime,
+            departureTime: depTimeParsed.timeString,
+            arrivalTime: arrTimeParsed.timeString,
             monday,
             tuesday,
             wednesday,
@@ -268,14 +230,14 @@ async function processFlightSchedules(jsonData: RateSheetData[], sheetName: stri
             friday,
             saturday,
             sunday,
-            scheduleType: 'weekly',
             carrier: 'LH',
             notes: `Weekly schedule. Original data: ${JSON.stringify(row)}`,
             importBatchId: batchId,
           }
         });
+        
         successfulRows++;
-        console.log(`✓ LH Flight: ${flightNumber} ${originCode} → ${destinationCode}`);
+        console.log(`✓ LH Weekly Flight: ${flightNumber} ${originCode} → ${destinationCode}`);
       } catch (error) {
         errorRows++;
         console.error(`✗ Error creating LH flight schedule:`, (error as Error).message);
@@ -283,34 +245,51 @@ async function processFlightSchedules(jsonData: RateSheetData[], sheetName: stri
       }
     }
   } else {
-    // Aeromexico format
+    // Aeromexico format - specific date schedules
     validRows = jsonData.filter(row => row.Origin && row.Destination && row.Carrier);
     console.log(`Found ${validRows.length} valid Aeromexico schedule rows out of ${jsonData.length} total`);
     
     for (const row of validRows) {
       try {
-        await prisma.flightSchedule.create({
-          data: {
-            airline: String(row.Carrier),
-            flightNumber: String(row['Flight#']),
-            originCode: String(row.Origin),
-            destinationCode: String(row.Destination),
-            departureTime: formatAMTime(row['Dep. Time (2225 = 22:55)']),
-            arrivalTime: formatAMTime(row['Arr. Time (+1 = day after)']),
-            departureDate: parseAMDate(row['Departure Date']),
-            monday: false,
-            tuesday: false,
-            wednesday: false,
-            thursday: false,
-            friday: false,
-            saturday: false,
-            sunday: false,
-            scheduleType: 'specific',
-            carrier: 'AM',
-            notes: `Specific date schedule. Original data: ${JSON.stringify(row)}`,
-            importBatchId: batchId,
-          }
-        });
+        // Parse departure and arrival times, handling +1 indicator for next day
+        const depTimeRaw = row['Dep. Time (2225 = 22:55)'];
+        const arrTimeRaw = row['Arr. Time (+1 = day after)'];
+        
+        const depTimeParsed = parseTimeToString(depTimeRaw);
+        const arrTimeParsed = parseTimeToString(arrTimeRaw);
+        const departureDate = parseAMDate(row['Departure Date']);
+        
+        // Create ScheduledFlight instance directly for Aeromexico
+        if (departureDate && depTimeParsed.milliseconds !== null && arrTimeParsed.milliseconds !== null) {
+          // Create departure datetime
+          const departureAt = new Date(departureDate);
+          departureAt.setHours(0, 0, 0, 0);
+          departureAt.setMilliseconds(depTimeParsed.milliseconds);
+          
+          // Create arrival datetime (handle next day if needed)
+          const arrivalAt = new Date(departureDate);
+          arrivalAt.setHours(0, 0, 0, 0);
+          arrivalAt.setMilliseconds(arrTimeParsed.milliseconds);
+          
+          await prisma.scheduledFlight.create({
+            data: {
+              airline: String(row.Carrier),
+              flightNumber: String(row['Flight#']),
+              originCode: String(row.Origin),
+              destinationCode: String(row.Destination),
+              departureTime: depTimeParsed.timeString,
+              arrivalTime: arrTimeParsed.timeString,
+              departureDate,
+              departureAt,
+              arrivalAt,
+              scheduleType: 'specific',
+              carrier: 'AM',
+              notes: `Specific date schedule for ${departureDate.toISOString().split('T')[0]}. Original data: ${JSON.stringify(row)}`,
+              importBatchId: batchId,
+            }
+          });
+        }
+        
         successfulRows++;
         console.log(`✓ AM Flight: ${row['Flight#']} ${row.Origin} → ${row.Destination} on ${row['Departure Date']}`);
       } catch (error) {
@@ -371,10 +350,11 @@ async function truncateTables(): Promise<void> {
   console.log('🗑️  Truncating existing data...');
   
   // Delete in order to respect foreign key constraints
+  await prisma.scheduledFlight.deleteMany({});
+  await prisma.weeklyFlightSchedule.deleteMany({});
   await prisma.truckingRate.deleteMany({});
   await prisma.airportRate.deleteMany({});
   await prisma.airlineRate.deleteMany({});
-  await prisma.flightSchedule.deleteMany({});
   await prisma.importBatch.deleteMany({});
   
   console.log('✅ All rate sheet tables truncated');

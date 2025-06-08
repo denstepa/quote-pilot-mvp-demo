@@ -182,7 +182,7 @@ model AirlineRate {
   @@index([airline])
 }
 
-model FlightSchedule {
+model ScheduledFlight {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -193,11 +193,47 @@ model FlightSchedule {
   originCode    String   @map("origin_code")
   destinationCode String @map("destination_code")
   
-  // Timing
+  // Timing - string format for display
   departureTime String?  @map("departure_time") // Formatted time string
   arrivalTime   String?  @map("arrival_time")   // Formatted time string
   
-  // Schedule (for Lufthansa - weekly schedule)
+  departureDate DateTime? @map("departure_date")
+  departureAt DateTime? @map("departure_at")
+  arrivalAt DateTime? @map("arrival_at")
+  
+  // Metadata
+  scheduleType  String   @map("schedule_type") // "specific"
+  carrier       String   // "AM"
+  notes         String?
+  
+  // Import tracking
+  importBatchId String?      @map("import_batch_id")
+  importBatch   ImportBatch? @relation("ImportedScheduledFlights", fields: [importBatchId], references: [id])
+  
+  weeklyFlightScheduleId String?
+  weeklyFlightSchedule WeeklyFlightSchedule? @relation("FromWeeklyFlightSchedule", fields: [weeklyFlightScheduleId], references: [id])
+  
+  @@map("scheduled_flights")
+  @@index([airline, flightNumber])
+  @@index([originCode, destinationCode])
+  @@index([carrier])
+}
+
+model WeeklyFlightSchedule {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Flight information
+  airline       String
+  flightNumber  String   @map("flight_number")
+  originCode    String   @map("origin_code")
+  destinationCode String @map("destination_code")
+  
+  // Timing - string format for display
+  departureTime String?  @map("departure_time") // Formatted time string
+  arrivalTime   String?  @map("arrival_time")   // Formatted time string
+    
   monday        Boolean  @default(false)
   tuesday       Boolean  @default(false)
   wednesday     Boolean  @default(false)
@@ -206,19 +242,17 @@ model FlightSchedule {
   saturday      Boolean  @default(false)
   sunday        Boolean  @default(false)
   
-  // Specific dates (for Aeromexico)
-  departureDate DateTime? @map("departure_date")
-  
-  // Metadata
-  scheduleType  String   @map("schedule_type") // "weekly" or "specific"
-  carrier       String   // "LH" or "AM"
+  carrier       String   // "LH"
   notes         String?
   
   // Import tracking
   importBatchId String?      @map("import_batch_id")
-  importBatch   ImportBatch? @relation("ImportedFlightSchedules", fields: [importBatchId], references: [id])
+  importBatch   ImportBatch? @relation("ImportedWeeklyFlightSchedules", fields: [importBatchId], references: [id])
   
-  @@map("flight_schedules")
+  // Relationship to actual flight instances
+  scheduledFlights ScheduledFlight[] @relation("FromWeeklyFlightSchedule")
+  
+  @@map("weekly_flight_schedules")
   @@index([airline, flightNumber])
   @@index([originCode, destinationCode])
   @@index([carrier])
@@ -237,10 +271,11 @@ model ImportBatch {
   errorRows   Int      @map("error_rows")
   
   // Relationships to track what was imported
-  truckingRates   TruckingRate[]   @relation("ImportedTruckingRates")
-  airportRates    AirportRate[]    @relation("ImportedAirportRates") 
-  airlineRates    AirlineRate[]    @relation("ImportedAirlineRates")
-  flightSchedules FlightSchedule[] @relation("ImportedFlightSchedules")
+  truckingRates          TruckingRate[]          @relation("ImportedTruckingRates")
+  airportRates           AirportRate[]           @relation("ImportedAirportRates") 
+  airlineRates           AirlineRate[]           @relation("ImportedAirlineRates")
+  scheduledFlights       ScheduledFlight[]       @relation("ImportedScheduledFlights")
+  weeklyFlightSchedules  WeeklyFlightSchedule[]  @relation("ImportedWeeklyFlightSchedules")
   
   @@map("import_batches")
 }

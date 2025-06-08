@@ -14,7 +14,8 @@
     "excel:upload": "npx ts-node scripts/parse-excel.ts upload",
     "excel:help": "npx ts-node scripts/parse-excel.ts",
     "rates:upload": "npx ts-node scripts/upload-rate-sheets.ts upload",
-    "rates:help": "npx ts-node scripts/upload-rate-sheets.ts"
+    "rates:help": "npx ts-node scripts/upload-rate-sheets.ts",
+    "rates:generate-scheduled-flights": "npx ts-node scripts/generate-scheduled-flights.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",
