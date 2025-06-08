@@ -4,7 +4,6 @@ import { findFirstAvailableFlight } from "./avaialble-flights";
 import { calculateFlightPrice } from "./flight-route-price";
 import moment from 'moment';
 
-
 export const calculateAirRouteSegmentPrice = async (segment: RouteSegment, request: Request, startTime: Date): Promise<RouteSegment> => {
   if (!segment.originAirportCode || !segment.destinationAirportCode) {
     throw new Error('Route segment is missing required airport codes');
@@ -14,7 +13,6 @@ export const calculateAirRouteSegmentPrice = async (segment: RouteSegment, reque
     throw new Error('Request is missing required weight information');
   }
 
-  // 1. Find available flights based on schedule
   const availableFlight: ScheduledFlight | null = await findFirstAvailableFlight({
     originCode: segment.originAirportCode,
     destinationCode: segment.destinationAirportCode,
@@ -24,7 +22,7 @@ export const calculateAirRouteSegmentPrice = async (segment: RouteSegment, reque
   });
 
   if (!availableFlight) {
-    throw new Error(`No flights found from ${segment.originAirportCode} to ${segment.destinationAirportCode}`);
+    throw new Error(`No flights found from ${segment.originAirportCode} to ${segment.destinationAirportCode}, by ${segment.airline} between ${startTime} and ${request.deliveryDate}`);
   }
 
   const price: number = await calculateFlightPrice(availableFlight, segment, request);

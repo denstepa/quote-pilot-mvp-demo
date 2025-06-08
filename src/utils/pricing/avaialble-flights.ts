@@ -34,6 +34,8 @@ export async function findFirstAvailableFlight({
       airline,
       departureAt: {
         gte: startTime,
+      },
+      arrivalAt: {
         lte: deliveryDeadline,
       },
     },

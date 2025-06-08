@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2 } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2, RefreshCw } from "lucide-react";
 import Routes from "@/components/Routes";
 import { RequestWithRouteOptions } from "../../../../types";
 
@@ -32,6 +32,7 @@ export default function RequestDetailPage() {
   const [request, setRequest] = useState<RequestWithRouteOptions | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reparsing, setReparsing] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -70,6 +71,32 @@ export default function RequestDetailPage() {
   const formatDimensions = (request: RequestWithRouteOptions) => {
     const dims = [request.length, request.width, request.height].filter(d => d != null);
     return dims.length > 0 ? `${dims.join(' × ')} cm` : 'N/A';
+  };
+
+  const handleReparse = async () => {
+    if (!request) return;
+    
+    setReparsing(true);
+    try {
+      const response = await fetch(`/api/requests/${request.id}/reparse`, {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setRequest(result.request);
+        // Refresh the page to show updated data
+        await fetchRequest(request.id);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to re-parse request');
+      }
+    } catch (error) {
+      console.error('Error re-parsing request:', error);
+      setError('Failed to re-parse request');
+    } finally {
+      setReparsing(false);
+    }
   };
 
   if (loading) {
@@ -114,7 +141,19 @@ export default function RequestDetailPage() {
             <h1 className="text-3xl font-bold tracking-tight">Request Details</h1>
             <p className="text-gray-600 mt-2">Request from {request.company}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {true && (
+              <Button
+                onClick={handleReparse}
+                disabled={reparsing}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${reparsing ? 'animate-spin' : ''}`} />
+                {reparsing ? 'Re-parsing...' : 'Re-parse Email'}
+              </Button>
+            )}
             <Badge className={statusColors[request.status as keyof typeof statusColors]}>
               {request.status}
             </Badge>

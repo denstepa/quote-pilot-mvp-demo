@@ -12,7 +12,11 @@ export async function POST(
     const route = await prisma.routeOption.findUniqueOrThrow({
       where: { id: routeId },
       include: {
-        segments: true,
+        segments: {
+          orderBy: {
+            sequence: 'asc'
+          }
+        },
       },
     });
 

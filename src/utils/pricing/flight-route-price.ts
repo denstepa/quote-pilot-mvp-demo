@@ -46,11 +46,11 @@ const calculateWeightPrice = (airlineRate: AirlineRate, cargoWeight: number): nu
   const fuelCharge = airlineRate.fuelChargePerKg * cargoWeight;
   const basePrice = airlineRate.basePrice;
   let weightPrice = 0;
-  if (cargoWeight <= 45 && airlineRate.priceUnder45kg) weightPrice = airlineRate.priceUnder45kg;
-  if (cargoWeight <= 100 && airlineRate.priceUnder100kg) weightPrice = airlineRate.priceUnder100kg;
-  if (cargoWeight <= 250 && airlineRate.priceUnder250kg) weightPrice = airlineRate.priceUnder250kg;
-  if (cargoWeight <= 300 && airlineRate.priceUnder300kg) weightPrice = airlineRate.priceUnder300kg;
-  if (cargoWeight <= 500 && airlineRate.priceUnder500kg) weightPrice = airlineRate.priceUnder500kg;
-  if (cargoWeight <= 1000 && airlineRate.priceUnder1000kg) weightPrice = airlineRate.priceUnder1000kg;
+  if (cargoWeight <= 45 && airlineRate.priceUnder45kg) weightPrice = airlineRate.priceUnder45kg * cargoWeight;
+  if (cargoWeight <= 100 && airlineRate.priceUnder100kg) weightPrice = airlineRate.priceUnder100kg * cargoWeight;
+  if (cargoWeight <= 250 && airlineRate.priceUnder250kg) weightPrice = airlineRate.priceUnder250kg * cargoWeight;
+  if (cargoWeight <= 300 && airlineRate.priceUnder300kg) weightPrice = airlineRate.priceUnder300kg * cargoWeight;
+  if (cargoWeight <= 500 && airlineRate.priceUnder500kg) weightPrice = airlineRate.priceUnder500kg * cargoWeight;
+  if (cargoWeight <= 1000 && airlineRate.priceUnder1000kg) weightPrice = airlineRate.priceUnder1000kg * cargoWeight;
   return weightPrice + fuelCharge + basePrice;
 }

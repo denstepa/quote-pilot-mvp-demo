@@ -27,12 +27,14 @@ export async function calculateRoutePrice(routeOption: RouteOptionWithSegments):
       totalPrice += calculatedSegment.price!;
       totalDuration += calculatedSegment.duration!;
       deliveryTime = calculatedSegment.arrivalTime!;
+      console.log('trucking segment', calculatedSegment);
     } else if (segment.segmentType === SegmentType.AIR) {
       const calculatedSegment = await calculateAirRouteSegmentPrice(segment, request, newStartTime);
       newStartTime = calculatedSegment.arrivalTime!;
       totalPrice += calculatedSegment.price!;
       totalDuration += calculatedSegment.duration!;
       deliveryTime = calculatedSegment.arrivalTime!;
+      console.log('air segment', calculatedSegment);
     }
   }
 
@@ -64,7 +66,11 @@ export async function calculateAllRequestRoutes(request: Request): Promise<Reque
       requestId: request.id
     },
     include: {
-      segments: true
+      segments: {
+        orderBy: {
+          sequence: 'asc'
+        }
+      }
     }
   });
 

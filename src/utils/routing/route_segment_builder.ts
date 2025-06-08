@@ -19,11 +19,14 @@ interface AirportPairWithAirline extends AirportPair {
  * @param airline Airline code
  * @returns true if there are flights available, false otherwise
  */
-async function hasFlightsBetweenAirports(origin: Airport, destination: Airport): Promise<string[]> {
+async function hasFlightsBetweenAirports(origin: Airport, destination: Airport, pickupDate: Date): Promise<string[]> {
   const flights = await prisma.scheduledFlight.findMany({
     where: {
       originCode: origin.stationCode,
       destinationCode: destination.stationCode,
+      departureAt: {
+        gte: pickupDate,
+      },
     },
     select: {
       airline: true,
@@ -87,7 +90,7 @@ export async function findFlightOptions(request: Request): Promise<AirportPairWi
   const airportPairs = await buildAirportPairs(originAirports, destinationAirports);
   const airportPairsWithAirlines: AirportPairWithAirline[] = [];
   for (const pair of airportPairs) {
-    const airlines = await hasFlightsBetweenAirports(pair.origin, pair.destination);
+    const airlines = await hasFlightsBetweenAirports(pair.origin, pair.destination, request.pickupDate || new Date());
     airlines.forEach(airline => {
       airportPairsWithAirlines.push({
         ...pair,
