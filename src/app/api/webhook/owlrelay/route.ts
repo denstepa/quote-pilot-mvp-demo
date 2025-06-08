@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
 import { parseEmailToRequest } from "@/utils/request_parser";
 import { geocodeAddress } from "@/utils/geocoding/google_geocoder";
+import { buildAvailableRoutes } from "@/utils/routing";
+import { calculateAllRequestRoutes } from "@/utils/pricing";
 
 interface EmailAddress {
   address: string;
@@ -63,7 +65,6 @@ export async function POST(req: NextRequest) {
         throw new Error("No email content found to parse");
       }
 
-      // First, save the email request to DB with basic information
       console.log("Creating initial request record...");
       const initialRequest = await prisma.request.create({
         data: {
@@ -131,26 +132,30 @@ export async function POST(req: NextRequest) {
           }
         });
 
-        return NextResponse.json({ 
-          status: 'success', 
-          requestId: updatedRequest.id,
-          parsedData: parsedRequest
-        }, { status: 200 });
+        try {
+          await buildAvailableRoutes(updatedRequest);
+          
+          await calculateAllRequestRoutes(updatedRequest);
 
-      } catch (parseError) {
+        } catch {
+          await prisma.request.update({
+            where: { id: updatedRequest.id },
+            data: {
+              status: 'FAILED',
+            }
+          });
+        }
+
+      } catch {
         await prisma.request.update({
           where: { id: initialRequest.id },
           data: {
             status: 'FAILED',
-            notes: `Parsing failed: ${(parseError as Error).message}`
           }
         });
-
+      } finally {
         return NextResponse.json({ 
-          status: 'partial_success', 
-          requestId: initialRequest.id,
-          message: 'Email saved but parsing failed',
-          error: (parseError as Error).message
+          status: 'success',
         }, { status: 200 });
       }
     }
