@@ -1,12 +1,16 @@
-import { RouteOption as PrismaRouteOption, RouteSegment as PrismaRouteSegment, RouteStatus, SegmentType } from '@prisma/client';
+import { Prisma, RouteSegment as PrismaRouteSegment, RouteStatus, SegmentType } from '@prisma/client';
 
 export type RouteSegment = PrismaRouteSegment & {
   // Add any additional fields or overrides here
 };
 
-export type RouteOptionWithSegments = PrismaRouteOption & {
-  // Add any additional fields or overrides here
-  segments: RouteSegment[];
-};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const routeOptionWithSegments = Prisma.validator<Prisma.RouteOptionDefaultArgs>()({ 
+  include: {
+    segments: true,
+  },
+});
+
+export type RouteOptionWithSegments = Prisma.RouteOptionGetPayload<typeof routeOptionWithSegments>;
 
 export { RouteStatus, SegmentType };

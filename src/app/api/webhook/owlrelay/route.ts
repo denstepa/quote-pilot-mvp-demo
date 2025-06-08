@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
 import { parseEmailToRequest } from "@/utils/request_parser";
-import { parseEmailFormData } from "@/utils/email-parser";
 import { geocodeAddress } from "@/utils/geocoding/google_geocoder";
 
+interface EmailAddress {
+  address: string;
+  name?: string;
+}
+
+interface EmailMetadata {
+  from: EmailAddress;
+  to: EmailAddress[];
+  subject: string;
+  date: string;
+  messageId: string;
+  text: string;
+  html?: string;
+}
 
 export async function POST(req: NextRequest) {
   console.log("Received request at /api/webhook/owlrelay");
@@ -13,8 +26,34 @@ export async function POST(req: NextRequest) {
     
     if (formData) {
       console.log("Form data received:", Object.fromEntries(formData.entries()));
+
+      // Get form data entries as an array of keys
+      const formDataEntries = Array.from(formData.entries());
+      console.log("Form data entries:", formDataEntries.map(entry => entry[0]));
       
-      const emailMetadata = parseEmailFormData(formData);
+      // Parse the email JSON from the form data
+      const emailJsonString = formData.get('email') as string;
+      if (!emailJsonString) {
+        throw new Error("No email data found in form data");
+      }
+
+      let emailData;
+      try {
+        emailData = JSON.parse(emailJsonString);
+      } catch (parseError) {
+        throw new Error(`Failed to parse email JSON: ${parseError}`);
+      }
+
+      // Extract email metadata from the parsed JSON
+      const emailMetadata: EmailMetadata = {
+        from: emailData.from || { address: 'unknown' },
+        to: emailData.to || [{ address: 'unknown' }],
+        subject: emailData.subject || '',
+        date: emailData.date || new Date().toISOString(),
+        messageId: emailData.messageId || '',
+        text: emailData.text || '',
+        html: emailData.html || ''
+      };
 
       // Get email address from metadata
       const fromAddress = emailMetadata.from.address;

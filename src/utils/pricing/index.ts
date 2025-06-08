@@ -1,11 +1,11 @@
-import { RouteOption, RouteStatus, SegmentType } from "@prisma/client";
+import { RouteStatus, SegmentType } from "@prisma/client";
 import { RouteOptionWithSegments } from "../../../types";
 import { calculateTruckingRouteSegmentPrice } from "./trucking_price";
 import { calculateAirRouteSegmentPrice } from "./air_pricing";
 import prisma from "@/libs/prisma";
 
 
-export async function calculateRoutePrice(routeOption: RouteOptionWithSegments): Promise<RouteOption> {
+export async function calculateRoutePrice(routeOption: RouteOptionWithSegments): Promise<RouteOptionWithSegments> {
 
   const request = await prisma.request.findUniqueOrThrow({
     where: {
@@ -40,6 +40,9 @@ export async function calculateRoutePrice(routeOption: RouteOptionWithSegments):
       currency: 'EUR',
       status: RouteStatus.AVAILABLE
     },
+    include: {
+      segments: true
+    }
   });
 
   return updatedRouteOption;
