@@ -158,7 +158,7 @@ export default function RequestDetailPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Received</label>
-                <p className="text-sm">{formatDate(request.createdAt.toISOString())}</p>
+                <p className="text-sm">{formatDate(request.createdAt)}</p>
               </div>
             </CardContent>
           </Card>
@@ -173,11 +173,11 @@ export default function RequestDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">Pickup Date</label>
-                  <p className="text-sm">{formatDate(request.pickupDate?.toISOString())}</p>
+                  <p className="text-sm">{formatDate(request.pickupDate)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Delivery Date</label>
-                  <p className="text-sm">{formatDate(request.deliveryDate?.toISOString())}</p>
+                  <p className="text-sm">{formatDate(request.deliveryDate)}</p>
                 </div>
               </div>
               <div>

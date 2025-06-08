@@ -34,6 +34,8 @@ export async function buildAvailableRoutes(request: Request): Promise<RouteOptio
               destinationLongitude: originAirport.longitude,
               originName: request.originAddress,
               destinationName: originAirport.name,
+              originCountryCode: request.originCountryCode,
+              destinationCountryCode: originAirport.countryCode,
             },
             {
               segmentType: 'AIR',
@@ -59,6 +61,8 @@ export async function buildAvailableRoutes(request: Request): Promise<RouteOptio
               destinationLongitude: request.destinationLongitude,
               originName: destinationAirport.name,
               destinationName: request.destinationAddress,
+              destinationCountryCode: request.destinationCountryCode,
+              originCountryCode: destinationAirport.countryCode,
             }
           ]
         }

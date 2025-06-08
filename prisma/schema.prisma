@@ -217,6 +217,7 @@ model ScheduledFlight {
   @@index([airline, flightNumber])
   @@index([originCode, destinationCode])
   @@index([carrier])
+  RouteSegment RouteSegment[]
 }
 
 model WeeklyFlightSchedule {
@@ -382,6 +383,13 @@ model RouteSegment {
   airline     String?
   flightNumber String? @map("flight_number")
   notes       String?
+
+  departureTime DateTime? @map("departure_time")
+  arrivalTime DateTime? @map("arrival_time")
+
+  // Scheduled flight
+  scheduledFlightId String? @map("scheduled_flight_id")
+  scheduledFlight ScheduledFlight? @relation(fields: [scheduledFlightId], references: [id])
 
   @@map("route_segments")
   @@index([routeOptionId])
