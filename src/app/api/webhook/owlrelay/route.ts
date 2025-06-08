@@ -26,13 +26,7 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     
-    if (formData) {
-      console.log("Form data received:", Object.fromEntries(formData.entries()));
-
-      // Get form data entries as an array of keys
-      const formDataEntries = Array.from(formData.entries());
-      console.log("Form data entries:", formDataEntries.map(entry => entry[0]));
-      
+    if (formData) {      
       const emailJsonString = formData.get('email') as string;
       if (!emailJsonString) {
         throw new Error("No email data found in form data");

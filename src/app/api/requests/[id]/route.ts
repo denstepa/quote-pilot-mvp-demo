@@ -11,6 +11,19 @@ export async function GET(
     const requestData = await prisma.request.findUnique({
       where: {
         id: id
+      },
+      include: {
+        cheapestRoute: true,
+        fastestRoute: true,
+        routeOptions: {
+          include: {
+            segments: {
+              orderBy: {
+                sequence: 'asc'
+              }
+            }
+          }
+        }
       }
     });
 

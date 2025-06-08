@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2 } from "lucide-react";
 import Routes from "@/components/Routes";
-import { Request } from "@prisma/client";
+import { RequestWithRouteOptions } from "../../../../types";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -29,7 +29,7 @@ const priorityColors = {
 export default function RequestDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [request, setRequest] = useState<Request | null>(null);
+  const [request, setRequest] = useState<RequestWithRouteOptions | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +43,7 @@ export default function RequestDetailPage() {
     try {
       const response = await fetch(`/api/requests/${id}`);
       if (response.ok) {
-        const data = await response.json();
+        const data: RequestWithRouteOptions = await response.json();
         setRequest(data);
       } else {
         setError('Request not found');
@@ -67,7 +67,7 @@ export default function RequestDetailPage() {
     });
   };
 
-  const formatDimensions = (request: Request) => {
+  const formatDimensions = (request: RequestWithRouteOptions) => {
     const dims = [request.length, request.width, request.height].filter(d => d != null);
     return dims.length > 0 ? `${dims.join(' × ')} cm` : 'N/A';
   };

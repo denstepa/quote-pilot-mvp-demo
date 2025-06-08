@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Route, Loader2 } from "lucide-react";
-import type { RouteOption, RouteSegment, Request } from "@prisma/client";
+import type { RouteOption, RouteSegment } from "@prisma/client";
 import { RouteOption as RouteOptionComponent } from "./RouteOption";
 import { RequestWithRouteOptions } from "../../types";
 
@@ -14,40 +14,22 @@ type RouteOptionWithSegments = RouteOption & {
 };
 
 interface RoutesProps {
-  request: Request;
+  request: RequestWithRouteOptions;
 }
 
 export function Routes({ request }: RoutesProps) {
-  const [routeOptions, setRouteOptions] = useState<RouteOptionWithSegments[] | undefined>(undefined);
+  const [routeOptions, setRouteOptions] = useState<RouteOptionWithSegments[] | undefined>(request.routeOptions);
   const [calculatingRoutes, setCalculatingRoutes] = useState(false);
-  const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
   const [calculatingPrices, setCalculatingPrices] = useState<Record<string, boolean>>({});
-  const [cheapestRouteId, setCheapestRouteId] = useState<string | null>(null);
-  const [fastestRouteId, setFastestRouteId] = useState<string | null>(null);
+  const [cheapestRouteId, setCheapestRouteId] = useState<string | null>(request.cheapestRouteId);
+  const [fastestRouteId, setFastestRouteId] = useState<string | null>(request.fastestRouteId);
 
   useEffect(() => {
-    loadExistingRoutes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [request.id]);
-
-  const loadExistingRoutes = async () => {
-    setLoadingRoutes(true);
-    setRouteError(null);
-    try {
-      const response = await fetch(`/api/requests/${request.id}/routes`);
-      if (response.ok) {
-        const data: RequestWithRouteOptions = await response.json();
-        setRouteOptions(data.routeOptions);
-      } else {
-        setRouteOptions([]);
-      }
-    } catch {
-      setRouteOptions([]);
-    } finally {
-      setLoadingRoutes(false);
-    }
-  };
+    setRouteOptions(request.routeOptions);
+    setCheapestRouteId(request.cheapestRouteId);
+    setFastestRouteId(request.fastestRouteId);
+  }, [request.routeOptions, request.cheapestRouteId, request.fastestRouteId]);
 
   const calculateRoutes = async () => {
     setCalculatingRoutes(true);
@@ -95,7 +77,7 @@ export function Routes({ request }: RoutesProps) {
     }
   };
 
-  if (loadingRoutes) {
+  if (calculatingRoutes) {
     return (
       <Card>
         <CardHeader>
@@ -111,7 +93,7 @@ export function Routes({ request }: RoutesProps) {
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center gap-2 text-gray-500">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Loading routes...
+              Calculating routes...
             </div>
           </div>
         </CardContent>
