@@ -23,9 +23,21 @@ export async function POST(
       );
     }
 
-    const updatedRoute = await calculateRoutePrice(route);
+    await calculateRoutePrice(route);
 
-    return NextResponse.json(updatedRoute);
+    // Fetch the complete updated route with segments
+    const completeUpdatedRoute = await prisma.routeOption.findUniqueOrThrow({
+      where: { id: routeId },
+      include: {
+        segments: {
+          orderBy: {
+            sequence: 'asc'
+          }
+        },
+      },
+    });
+
+    return NextResponse.json(completeUpdatedRoute);
   } catch (error) {
     console.error('Error calculating route price:', error);
     return NextResponse.json(

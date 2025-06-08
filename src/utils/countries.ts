@@ -62,6 +62,7 @@ export function getCountryName(code: string): string {
  */
 export function getCountryCode(name: string): string {
   const entry = Object.entries(COUNTRY_CODES).find(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ([_, countryName]) => countryName.toLowerCase() === name.toLowerCase()
   );
   return entry ? entry[0] : name;

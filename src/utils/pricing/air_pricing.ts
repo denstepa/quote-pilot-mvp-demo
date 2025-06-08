@@ -47,5 +47,5 @@ export const calculateAirRouteSegmentPrice = async (segment: RouteSegment, reque
 const calculateFlightDuration = (flight: ScheduledFlight): number => {
   const departureTime = moment(flight.departureAt);
   const arrivalTime = moment(flight.arrivalAt);
-  return arrivalTime.diff(departureTime, 'hours');
+  return arrivalTime.diff(departureTime, 'minutes') / 60;
 }

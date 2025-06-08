@@ -74,13 +74,13 @@ export async function findFlightOptions(request: Request): Promise<AirportPairWi
   const originAirports: Airport[] = await findClosestAirports(
     request.originLatitude,
     request.originLongitude,
-    3
+    5
   );
 
   const destinationAirports: Airport[] = await findClosestAirports(
     request.destinationLatitude,
     request.destinationLongitude,
-    3
+    5
   );
 
   // Build and filter airport pairs

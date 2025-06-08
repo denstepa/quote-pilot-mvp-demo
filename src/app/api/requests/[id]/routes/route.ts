@@ -6,9 +6,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const requestId = params.id;
+    const { id } = await params;
 
-    if (!requestId) {
+    if (!id) {
       return NextResponse.json(
         { error: 'Request ID is required' },
         { status: 400 }
@@ -18,7 +18,7 @@ export async function GET(
     // Fetch existing route options for the request
     const routeOptions = await prisma.routeOption.findMany({
       where: {
-        requestId: requestId
+        requestId: id
       },
       include: {
         segments: {

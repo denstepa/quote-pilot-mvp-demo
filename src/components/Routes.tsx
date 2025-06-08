@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Route, Loader2, Truck, Plane, ArrowRight, MapPin, Calculator } from "lucide-react";
-import { RouteOption, Request, RouteSegment } from "@prisma/client";
+import { Route, Loader2 } from "lucide-react";
+import type { RouteOption, RouteSegment, Request } from "@prisma/client";
+import { RouteOption as RouteOptionComponent } from "./RouteOption";
 
 // Extended type to include segments for RouteOption
 type RouteOptionWithSegments = RouteOption & {
@@ -105,7 +105,7 @@ export function Routes({ request }: RoutesProps) {
           route.id === routeId ? { ...route, ...updatedRoute } : route
         )
       );
-    } catch (error) {
+    } catch {
       setRouteError('Failed to calculate price. Please try again.');
     } finally {
       setCalculatingPrices(prev => ({ ...prev, [routeId]: false }));
@@ -175,90 +175,12 @@ export function Routes({ request }: RoutesProps) {
         {routeOptions && routeOptions.length > 0 ? (
           <div className="space-y-6">
             {routeOptions.map((route) => (
-              <Card key={route.id} className="border-2">
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="capitalize">
-                          {route.status.toLowerCase()}
-                        </Badge>
-                        {route.totalPrice && (
-                          <div className="text-sm font-medium">
-                            {route.totalPrice.toFixed(2)} {route.currency}
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => calculateRoutePrice(route.id)}
-                        disabled={calculatingPrices[route.id]}
-                      >
-                        {calculatingPrices[route.id] ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Calculating...
-                          </>
-                        ) : (
-                          <>
-                            <Calculator className="h-4 w-4 mr-2" />
-                            Calculate Price
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {route.segments.map((segment: RouteSegment) => (
-                        <div key={segment.id} className="flex items-center gap-4">
-                          <div className="flex items-center gap-2 min-w-[100px]">
-                            <Badge variant="secondary" className={`capitalize ${getSegmentColor(segment.segmentType)}`}>
-                              {getSegmentIcon(segment.segmentType)}
-                              <span className="ml-1">{segment.segmentType.toLowerCase()}</span>
-                            </Badge>
-                          </div>
-                          
-                          <div className="flex-1 flex items-center gap-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <MapPin className="h-4 w-4 text-gray-500" />
-                              <span className="font-medium">{segment.originName}</span>
-                            </div>
-                            
-                            <ArrowRight className="h-4 w-4 text-gray-400" />
-                            
-                            <div className="flex items-center gap-2 text-sm">
-                              <MapPin className="h-4 w-4 text-gray-500" />
-                              <span className="font-medium">{segment.destinationName}</span>
-                            </div>
-                          </div>
-
-                          {/* Show airline for AIR segments */}
-                          {segment.segmentType === 'AIR' && segment.airline && (
-                            <div className="text-sm text-gray-600 min-w-[60px] text-center">
-                              <Badge variant="outline" className="text-xs">
-                                {segment.airline}
-                              </Badge>
-                            </div>
-                          )}
-
-                          {segment.distance && (
-                            <div className="text-sm text-gray-500 min-w-[80px] text-right">
-                              {segment.distance.toFixed(1)} km
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {route.totalDistance && (
-                      <div className="flex justify-end text-sm text-gray-500 pt-2 border-t">
-                        Total Distance: {route.totalDistance.toFixed(1)} km
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <RouteOptionComponent
+                key={route.id}
+                route={route}
+                onCalculatePrice={calculateRoutePrice}
+                isCalculatingPrice={calculatingPrices[route.id]}
+              />
             ))}
           </div>
         ) : routeOptions ? (

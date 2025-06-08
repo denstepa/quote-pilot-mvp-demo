@@ -37,6 +37,9 @@ export async function findFirstAvailableFlight({
         lte: deliveryDeadline,
       },
     },
+    orderBy: {
+      departureAt: 'asc',
+    },
   });
 
   return flight;

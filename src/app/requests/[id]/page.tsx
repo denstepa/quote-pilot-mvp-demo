@@ -67,7 +67,7 @@ export default function RequestDetailPage() {
     });
   };
 
-  const formatDimensions = (request: any) => {
+  const formatDimensions = (request: Request) => {
     const dims = [request.length, request.width, request.height].filter(d => d != null);
     return dims.length > 0 ? `${dims.join(' × ')} cm` : 'N/A';
   };
