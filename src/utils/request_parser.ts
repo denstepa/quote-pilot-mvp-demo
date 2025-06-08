@@ -64,8 +64,6 @@ If information is missing or unclear, use null for optional fields.
   return object;
 };
 
-
-// Utility function to parse email files from the emails folder
 export const parseEmailFile = async (
   filePath: string,
 ): Promise<ParsedRequest> => {
@@ -74,7 +72,6 @@ export const parseEmailFile = async (
   return parseEmailToRequest(emailContent);
 };
 
-// Batch process multiple email files
 export const parseMultipleEmails = async (
   emailContents: string[],
 ): Promise<ParsedRequest[]> => {

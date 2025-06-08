@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
       const formDataEntries = Array.from(formData.entries());
       console.log("Form data entries:", formDataEntries.map(entry => entry[0]));
       
-      // Parse the email JSON from the form data
       const emailJsonString = formData.get('email') as string;
       if (!emailJsonString) {
         throw new Error("No email data found in form data");
@@ -44,7 +43,6 @@ export async function POST(req: NextRequest) {
         throw new Error(`Failed to parse email JSON: ${parseError}`);
       }
 
-      // Extract email metadata from the parsed JSON
       const emailMetadata: EmailMetadata = {
         from: emailData.from || { address: 'unknown' },
         to: emailData.to || [{ address: 'unknown' }],
@@ -55,7 +53,6 @@ export async function POST(req: NextRequest) {
         html: emailData.html || ''
       };
 
-      // Get email address from metadata
       const fromAddress = emailMetadata.from.address;
       const toAddress = emailMetadata.to[0]?.address || 'unknown';
       const emailContent = emailMetadata.text;
@@ -66,81 +63,96 @@ export async function POST(req: NextRequest) {
         throw new Error("No email content found to parse");
       }
 
-      // Parse the email content to extract request data
-      console.log("Parsing email content for transport request...");
-      const parsedRequest = await parseEmailToRequest(`Subject: ${emailMetadata.subject}\n\n${emailContent}`);
-      
-      // Geocode both addresses
-      const [originResult, destinationResult] = await Promise.all([
-        geocodeAddress(parsedRequest.originAddress),
-        geocodeAddress(parsedRequest.destinationAddress)
-      ]);
-
-      if (originResult.error || destinationResult.error) {
-        throw new Error(
-          `Geocoding failed: ${originResult.error || ''} ${destinationResult.error || ''}`
-        );
-      }
-
-      console.log("Parsed request data:", parsedRequest);
-
-      // Convert parsed data to Prisma-compatible format and save to database
-      const savedRequest = await prisma.request.create({
+      // First, save the email request to DB with basic information
+      console.log("Creating initial request record...");
+      const initialRequest = await prisma.request.create({
         data: {
-          // Raw email data
           rawBody: emailContent,
           subject: emailMetadata.subject,
           from: fromAddress,
           to: toAddress,
           
-          // Parsed shipping details
-          company: parsedRequest.company,
-          pickupDate: parsedRequest.pickupDate ? new Date(parsedRequest.pickupDate) : null,
-          deliveryDate: parsedRequest.deliveryDate ? new Date(parsedRequest.deliveryDate) : null,
+          company: '',
+          originAddress: '',
+          destinationAddress: '',
           
-          // Dimensions and weight
-          height: parsedRequest.height,
-          width: parsedRequest.width,
-          length: parsedRequest.length,
-          weight: parsedRequest.weight,
-          
-          // Addresses
-          originAddress: parsedRequest.originAddress,
-          destinationAddress: parsedRequest.destinationAddress,
-          
-          // Contact information
-          contactEmail: parsedRequest.contactEmail,
-          
-          // Additional metadata
           status: 'PENDING',
-          priority: parsedRequest.priority,
-          notes: parsedRequest.notes,
-
-          // Geocoding fields
-          originLatitude: originResult.coordinates.latitude,
-          originLongitude: originResult.coordinates.longitude,
-          originFormattedAddress: originResult.coordinates.formattedAddress,
-          originPlaceId: originResult.coordinates.placeId,
-          originCountryCode: originResult.coordinates.countryCode,
-          destinationLatitude: destinationResult.coordinates.latitude,
-          destinationLongitude: destinationResult.coordinates.longitude,
-          destinationFormattedAddress: destinationResult.coordinates.formattedAddress,
-          destinationPlaceId: destinationResult.coordinates.placeId,
-          destinationCountryCode: destinationResult.coordinates.countryCode,
         }
       });
-      
-      if (!savedRequest || !savedRequest.id) {
-        throw new Error("Failed to create request record");
-      }
 
-      console.log(`✅ Successfully created request: ${savedRequest.id}`);
-      
-      return NextResponse.json({ 
-        status: 'success', 
-        requestId: savedRequest.id,
-        parsedData: parsedRequest
-      }, { status: 200 });
+      console.log(`✅ Initial request created with ID: ${initialRequest.id}`);
+
+      try {
+        console.log("Parsing email content for transport request...");
+        const parsedRequest = await parseEmailToRequest(`Subject: ${emailMetadata.subject}\n\n${emailContent}`);
+        
+        const [originResult, destinationResult] = await Promise.all([
+          geocodeAddress(parsedRequest.originAddress),
+          geocodeAddress(parsedRequest.destinationAddress)
+        ]);
+
+        if (originResult.error || destinationResult.error) {
+          throw new Error(
+            `Geocoding failed: ${originResult.error || ''} ${destinationResult.error || ''}`
+          );
+        }
+
+        const updatedRequest = await prisma.request.update({
+          where: { id: initialRequest.id },
+          data: {
+            company: parsedRequest.company,
+            pickupDate: parsedRequest.pickupDate ? new Date(parsedRequest.pickupDate) : null,
+            deliveryDate: parsedRequest.deliveryDate ? new Date(parsedRequest.deliveryDate) : null,
+            
+            height: parsedRequest.height,
+            width: parsedRequest.width,
+            length: parsedRequest.length,
+            weight: parsedRequest.weight,
+            
+            originAddress: parsedRequest.originAddress,
+            destinationAddress: parsedRequest.destinationAddress,
+            
+            contactEmail: parsedRequest.contactEmail,
+            
+            status: 'PENDING',
+            priority: parsedRequest.priority,
+            notes: parsedRequest.notes,
+
+            originLatitude: originResult.coordinates.latitude,
+            originLongitude: originResult.coordinates.longitude,
+            originFormattedAddress: originResult.coordinates.formattedAddress,
+            originPlaceId: originResult.coordinates.placeId,
+            originCountryCode: originResult.coordinates.countryCode,
+            destinationLatitude: destinationResult.coordinates.latitude,
+            destinationLongitude: destinationResult.coordinates.longitude,
+            destinationFormattedAddress: destinationResult.coordinates.formattedAddress,
+            destinationPlaceId: destinationResult.coordinates.placeId,
+            destinationCountryCode: destinationResult.coordinates.countryCode,
+          }
+        });
+
+        return NextResponse.json({ 
+          status: 'success', 
+          requestId: updatedRequest.id,
+          parsedData: parsedRequest
+        }, { status: 200 });
+
+      } catch (parseError) {
+        await prisma.request.update({
+          where: { id: initialRequest.id },
+          data: {
+            status: 'FAILED',
+            notes: `Parsing failed: ${(parseError as Error).message}`
+          }
+        });
+
+        return NextResponse.json({ 
+          status: 'partial_success', 
+          requestId: initialRequest.id,
+          message: 'Email saved but parsing failed',
+          error: (parseError as Error).message
+        }, { status: 200 });
+      }
     }
     
     throw new Error("No form data received");

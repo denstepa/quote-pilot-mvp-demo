@@ -75,6 +75,7 @@ enum EmailStatus {
   ACCEPTED
   REJECTED
   COMPLETED
+  FAILED
 }
 
 enum Priority {
