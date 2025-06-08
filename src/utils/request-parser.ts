@@ -76,6 +76,9 @@ Be flexible with date formats and handle complex date/time expressions:
 - Extract the most specific date possible, ignoring qualifiers like "around", "approximately"
 - For delivery dates with "before" or "by", use the specified target date
 - If time is specified, still format as ISO date (time info can go in notes if relevant)
+- For "before" time specifications (e.g., "before 14:00"), use the specified time as the target time
+- For "on or before" dates, use the specified date with time set to 12:00:00
+- All dates should be in UTC timezone to ensure consistent handling
 
 Handle dimension formats like "120 x 80 x 150 cm" (treat as 120 height, 80 width, 150 length), "100 cm high, 80 cm wide, 170 cm long"
 Handle weight formats like "450 kg", "~460 kg", "500 kg"

@@ -9,7 +9,7 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:parser": "jest tests/request_parser.test.ts",
+    "test:parser": "jest tests/request-parser.test.ts",
     "excel:analyze": "npx ts-node scripts/parse-excel.ts analyze",
     "excel:upload": "npx ts-node scripts/parse-excel.ts upload",
     "excel:help": "npx ts-node scripts/parse-excel.ts",

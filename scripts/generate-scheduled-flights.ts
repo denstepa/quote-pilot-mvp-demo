@@ -1,3 +1,4 @@
+import { parseTimeToMilliseconds } from '@/utils/parser/time-parser';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -7,46 +8,6 @@ interface GenerationOptions {
   endDate?: Date;
   daysAhead?: number;
   clearExisting?: boolean;
-}
-
-function parseTimeToMilliseconds(timeString: string | null): number | null {
-  if (!timeString) return null;
-  
-  try {
-    let hours = 0;
-    let minutes = 0;
-    let isNextDay = false;
-
-    // Handle +1 indicator for next day
-    if (timeString.includes('+1')) {
-      isNextDay = true;
-      timeString = timeString.replace('+1', '');
-    }
-
-    // Parse HH:MM format
-    if (timeString.includes(':')) {
-      const parts = timeString.split(':');
-      hours = parseInt(parts[0], 10);
-      minutes = parseInt(parts[1], 10);
-    }
-
-    // Validate time values
-    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-      return null;
-    }
-
-    // Convert to milliseconds since midnight
-    let totalMilliseconds = (hours * 60 + minutes) * 60 * 1000;
-    
-    // Add 24 hours if it's next day
-    if (isNextDay) {
-      totalMilliseconds += 24 * 60 * 60 * 1000;
-    }
-
-    return totalMilliseconds;
-  } catch {
-    return null;
-  }
 }
 
 async function generateScheduledFlights(options: GenerationOptions = {}): Promise<void> {

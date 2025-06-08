@@ -1,6 +1,6 @@
 import { RouteSegment, Request, ScheduledFlight } from "@prisma/client";
 import prisma from "@/libs/prisma";
-import { findFirstAvailableFlight } from "./avaialble-flights";
+import { findFirstAvailableFlight } from "./available-flights";
 import { calculateFlightPrice } from "./flight-route-price";
 import moment from 'moment';
 

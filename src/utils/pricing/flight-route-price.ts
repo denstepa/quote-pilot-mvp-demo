@@ -1,8 +1,8 @@
 import { AirlineRate, AirportRate,  RouteSegment, Request, ScheduledFlight } from "@prisma/client";
-import prisma from "@/libs/prisma";
-import { convertToEur, SupportedCurrency } from "@/utils/currency";
+import prisma from "../../libs/prisma";
+import { convertToEur, SupportedCurrency } from "../../utils/currency";
 
-export const calculateFlightPrice= async (flight: ScheduledFlight, routeSegment: RouteSegment, request: Request): Promise<number> => {
+export const calculateFlightPrice = async (flight: ScheduledFlight, routeSegment: RouteSegment, request: Request): Promise<number> => {
 
   const originAirportRate: AirportRate = await prisma.airportRate.findFirstOrThrow({  
     where: {
@@ -42,7 +42,7 @@ export const calculateFlightPrice= async (flight: ScheduledFlight, routeSegment:
   return totalPrice;
 }
 
-const calculateWeightPrice = (airlineRate: AirlineRate, cargoWeight: number): number => {
+export const calculateWeightPrice = (airlineRate: AirlineRate, cargoWeight: number): number => {
   const fuelCharge = airlineRate.fuelChargePerKg * cargoWeight;
   const basePrice = airlineRate.basePrice;
   let weightPrice = 0;

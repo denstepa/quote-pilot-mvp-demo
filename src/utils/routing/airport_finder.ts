@@ -32,9 +32,3 @@ export async function findClosestAirports(
 
   return result;
 }
-
-// For backward compatibility
-export async function findClosestAirport(latitude: number, longitude: number): Promise<Airport | null> {
-  const airports = await findClosestAirports(latitude, longitude, 1);
-  return airports[0] || null;
-} 

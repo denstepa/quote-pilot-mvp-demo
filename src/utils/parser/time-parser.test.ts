@@ -1,4 +1,4 @@
-import { parseTimeToString } from '../../src/utils/parser/time-parser';
+import { parseAMDate, parseTimeToString, parseTimeToMilliseconds } from './time-parser';
 
 describe('parseTimeToString', () => {
   describe('colon format (Lufthansa style)', () => {
@@ -197,5 +197,39 @@ describe('parseTimeToString', () => {
       expect(result4.timeString).toBe('13:35');
       expect(result4.milliseconds).toBe(48900000);
     });
+  });
+}); 
+
+describe('parseAMDate', () => {
+  it('should parse valid date string in AM format', () => {
+    const result = parseAMDate('19.06.25');
+    expect(result).toEqual(new Date('2025-06-19'));
+  });
+
+  it('should return null for invalid input', () => {
+    expect(parseAMDate('invalid')).toBeNull();
+    expect(parseAMDate('')).toBeNull();
+    expect(parseAMDate(null)).toBeNull();
+    expect(parseAMDate(undefined)).toBeNull();
+  });
+}); 
+
+describe('parseTimeToMilliseconds', () => {
+  it('should parse HH:MM format correctly', () => {
+    expect(parseTimeToMilliseconds('13:35')).toBe((13 * 60 + 35) * 60 * 1000); // 48900000
+    expect(parseTimeToMilliseconds('00:00')).toBe(0);
+    expect(parseTimeToMilliseconds('23:59')).toBe((23 * 60 + 59) * 60 * 1000); // 86340000
+  });
+
+  it('should handle next day indicator (+1)', () => {
+    expect(parseTimeToMilliseconds('02:05+1')).toBe((2 * 60 + 5) * 60 * 1000 + 24 * 60 * 60 * 1000); // 93900000
+    expect(parseTimeToMilliseconds('23:59+1')).toBe((23 * 60 + 59) * 60 * 1000 + 24 * 60 * 60 * 1000); // 172740000
+  });
+
+  it('should return null for invalid inputs', () => {
+    expect(parseTimeToMilliseconds(null)).toBeNull();
+    expect(parseTimeToMilliseconds('25:00')).toBeNull(); // Invalid hours
+    expect(parseTimeToMilliseconds('12:60')).toBeNull(); // Invalid minutes
+    expect(parseTimeToMilliseconds('invalid')).toBeNull(); // Invalid format
   });
 }); 

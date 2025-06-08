@@ -1,7 +1,7 @@
 import { RouteStatus, SegmentType, Request } from "@prisma/client";
 import { RequestWithRouteOptions, RouteOptionWithSegments } from "../../../types";
-import { calculateTruckingRouteSegmentPrice } from "./trucking_price";
-import { calculateAirRouteSegmentPrice } from "./air_pricing";
+import { calculateTruckingRouteSegmentPrice } from "./trucking-price";
+import { calculateAirRouteSegmentPrice } from "./air-pricing";
 import prisma from "@/libs/prisma";
 import moment from "moment";
 

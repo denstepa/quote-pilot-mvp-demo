@@ -169,7 +169,6 @@ export async function calculateDistanceBetweenCoordinates(
       throw new Error('Google Maps API key is not configured');
     }
 
-    // Construct origin and destination coordinates
     const originString = `${origin.latitude},${origin.longitude}`;
     const destinationString = `${destination.latitude},${destination.longitude}`;
 
@@ -187,7 +186,6 @@ export async function calculateDistanceBetweenCoordinates(
       throw new Error('No distance data returned from API');
     }
 
-    // Convert meters to kilometers
     const distanceInMeters = data.rows[0].elements[0].distance.value;
     return distanceInMeters / 1000;
   } catch (error) {

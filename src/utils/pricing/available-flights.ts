@@ -1,5 +1,5 @@
-import { ScheduledFlight } from "@prisma/client";
-import prisma from "@/libs/prisma";
+import { Prisma, ScheduledFlight } from "@prisma/client";
+import prisma from "../../libs/prisma";
 
 type FindAvailableFlightParams = {
   originCode: string;
@@ -23,22 +23,23 @@ export async function findFirstAvailableFlight({
     throw new Error('Start time is required to find available flights');
   }
   
-  if (!deliveryDeadline) {
-    throw new Error('Delivery deadline is required to find available flights');
+  const whereClause: Prisma.ScheduledFlightWhereInput = {
+    originCode: originCode,
+    destinationCode: destinationCode,
+    airline,
+    departureAt: {
+      gte: startTime,
+    },
+  };
+
+  if (deliveryDeadline) {
+    whereClause.arrivalAt = {
+      lte: deliveryDeadline,
+    };
   }
 
   const flight = await prisma.scheduledFlight.findFirst({
-    where: {
-      originCode: originCode,
-      destinationCode: destinationCode,
-      airline,
-      departureAt: {
-        gte: startTime,
-      },
-      arrivalAt: {
-        lte: deliveryDeadline,
-      },
-    },
+    where: whereClause,
     orderBy: {
       departureAt: 'asc',
     },

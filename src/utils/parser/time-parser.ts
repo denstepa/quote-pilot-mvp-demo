@@ -91,3 +91,41 @@ export function parseAMDate(dateStr: unknown): Date | null {
   }
   return null;
 }
+
+
+export function parseTimeToMilliseconds(timeString: string | null): number | null {
+  if (!timeString) return null;
+  
+  try {
+    let hours = 0;
+    let minutes = 0;
+    let isNextDay = false;
+
+    if (timeString.includes('+1')) {
+      isNextDay = true;
+      timeString = timeString.replace('+1', '');
+    }
+
+    if (timeString.includes(':')) {
+      const parts = timeString.split(':');
+      hours = parseInt(parts[0], 10);
+      minutes = parseInt(parts[1], 10);
+    } else {
+      return null; // Return null if not in HH:MM format
+    }
+
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      return null;
+    }
+
+    let totalMilliseconds = (hours * 60 + minutes) * 60 * 1000;
+    
+    if (isNextDay) {
+      totalMilliseconds += 24 * 60 * 60 * 1000;
+    }
+
+    return totalMilliseconds;
+  } catch {
+    return null;
+  }
+}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
-import { parseEmailToRequest } from "@/utils/request_parser";
+import { parseEmailToRequest } from "@/utils/request-parser";
 import { geocodeAddress } from "@/utils/geocoding/google_geocoder";
 import { buildAvailableRoutes } from "@/utils/routing";
 import { calculateAllRequestRoutes } from "@/utils/pricing";
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
           data: {
             company: parsedRequest.company,
             pickupDate: parsedRequest.pickupDate ? new Date(parsedRequest.pickupDate) : null,
-            deliveryDate: parsedRequest.deliveryDate ? new Date(parsedRequest.deliveryDate) : null,
+            deliveryDate: parsedRequest.deliveryDate ?? null,
             
             height: parsedRequest.height,
             width: parsedRequest.width,

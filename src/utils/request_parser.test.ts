@@ -1,12 +1,12 @@
 import { readFileSync } from 'fs';
 import path from 'path';
-import { parseEmailToRequest, ParsedRequest } from '../src/utils/request_parser';
+import { parseEmailToRequest, ParsedRequest } from './request-parser';
 // Note: parseEmailFile and parseMultipleEmails are used in commented tests
 
 describe('Request Parser Integration Tests', () => {
   // Helper function to load email files
   const loadEmailFile = (filename: string): string => {
-    return readFileSync(path.join(__dirname, '..', 'data', 'emails', filename), 'utf-8');
+    return readFileSync(path.join(__dirname, '..', '..', 'data', 'emails', filename), 'utf-8');
   };
 
   // Test timeout for LLM calls (10 seconds)
@@ -35,10 +35,10 @@ describe('Request Parser Integration Tests', () => {
     //   const result = await parseEmailToRequest(emailContent);
 
     //   validateParsedRequest(result, 'Siemens');
-      
-    //   // Specific validations for this email
-    //   expect(result.pickupDate).not.toBeNull();
-    //   expect(result.deliveryDate).not.toBeNull();
+    //         const expectedPickup = new Date('2025-06-24T09:00:00+02:00');
+    //   const expectedDelivery = new Date('2025-07-08T14:00:00+02:00');
+    //   expect(result.pickupDate?.toISOString()).toBe(expectedPickup.toISOString());
+    //   expect(result.deliveryDate?.toISOString()).toBe(expectedDelivery.toISOString());
     //   expectDimensionsToMatch(result, [120, 80, 150]);
     //   expect(result.weight).toBe(450);
     //   expect(result.originAddress).toContain('Berlin');
@@ -53,10 +53,10 @@ describe('Request Parser Integration Tests', () => {
 
     //   validateParsedRequest(result, 'Bosch');
 
-    //   console.log(result);
-      
-    //   expect(result.pickupDate).not.toBeNull();
-    //   expect(result.deliveryDate).not.toBeNull();
+    //   const expectedPickup = new Date('2025-06-28T13:00:00+02:00');
+    //   const expectedDelivery = new Date('2025-07-13T16:00:00+02:00');
+    //   expect(result.pickupDate?.toISOString()).toBe(expectedPickup.toISOString());
+    //   expect(result.deliveryDate?.toISOString()).toBe(expectedDelivery.toISOString());
     //   expectDimensionsToMatch(result, [100, 120, 200]);
     //   expect(result.weight).toBe(600);
     //   expect(result.originAddress).toContain('Stuttgart');
@@ -71,13 +71,16 @@ describe('Request Parser Integration Tests', () => {
 
     //   validateParsedRequest(result, 'R&S');
       
-    //   expect(result.pickupDate).not.toBeNull();
-    //   expect(result.deliveryDate).not.toBeNull();
+    //   const expectedPickup = new Date('2025-07-05T14:00:00+02:00');
+    //   const expectedDelivery = new Date('2025-07-22T12:00:00+02:00');
+    //   expect(result.pickupDate?.toISOString()).toBe(expectedPickup.toISOString());
+    //   expect(result.deliveryDate?.toISOString()).toBe(expectedDelivery.toISOString());
     //   expectDimensionsToMatch(result, [100, 80, 170]);
     //   expect(result.weight).toBe(490);
     //   expect(result.originAddress).toContain('München');
     //   expect(result.destinationAddress).toContain('Mexico City');
     //   expect(result.contactEmail).toBe('export.mx@rohde-schwarz.com');
+
     // }, LLM_TIMEOUT);
 
     // it('should parse email_4.txt (Heraeus with booking priority)', async () => {
@@ -85,9 +88,10 @@ describe('Request Parser Integration Tests', () => {
     //   const result = await parseEmailToRequest(emailContent);
 
     //   validateParsedRequest(result, 'Heraeus');
-      
-    //   expect(result.pickupDate).not.toBeNull();
-    //   expect(result.deliveryDate).not.toBeNull();
+    //   const expectedPickup = new Date('2025-06-27T14:00:00');
+    //   const expectedDelivery = new Date('2025-07-13T12:00:00');
+    //   expect(result.pickupDate?.toISOString()).toBe(expectedPickup.toISOString());
+    //   expect(result.deliveryDate?.getTime()).toBeLessThanOrEqual(expectedDelivery.getTime());
     //   expectDimensionsToMatch(result, [95, 85, 160]);
     //   expect(result.weight).toBe(460);
     //   expect(result.originAddress).toContain('Wolfsburg');
@@ -96,22 +100,23 @@ describe('Request Parser Integration Tests', () => {
     //   expect(result.priority).toBe('NORMAL'); // Should be HIGH due to "booking"
     // }, LLM_TIMEOUT);
 
-    // it('should parse email_5.txt (TBD delivery date)', async () => {
-    //   const emailContent = loadEmailFile('email_5.txt');
-    //   const result = await parseEmailToRequest(emailContent);
+    it('should parse email_5.txt (TBD delivery date)', async () => {
+      const emailContent = loadEmailFile('email_5.txt');
+      const result = await parseEmailToRequest(emailContent);
 
-    //   validateParsedRequest(result, 'Siemens');
-      
-    //   expect(result.pickupDate).not.toBeNull();
-    //   expect(result.deliveryDate).toBeNull(); // TBD should be null
-    //   expectDimensionsToMatch(result, [100, 120, 150]);
-    //   expect(result.weight).toBe(500);
-    //   expect(result.originAddress).toContain('Saarbrücken');
-    //   expect(result.destinationAddress).toContain('Sanctorum');
-    //   expect(result.contactEmail).toBe('siemens.shipping@siemens.com');
-    //   expect(result.notes).toBeTruthy();
-    //   expect(result.priority).toBe('NORMAL');
-    // }, LLM_TIMEOUT);
+      validateParsedRequest(result, 'Siemens');
+
+      const expectedPickup = new Date('2025-07-04T10:00:00+02:00');
+      expect(result.pickupDate?.toISOString()).toBe(expectedPickup.toISOString());
+      expect(result.deliveryDate).toBeNull();
+      expectDimensionsToMatch(result, [100, 120, 150]);
+      expect(result.weight).toBe(500);
+      expect(result.originAddress).toContain('Saarbrücken');
+      expect(result.destinationAddress).toContain('Sanctorum');
+      expect(result.contactEmail).toBe('siemens.shipping@siemens.com');
+      expect(result.notes).toBeTruthy();
+      expect(result.priority).toBe('NORMAL');
+    }, LLM_TIMEOUT);
 
     // it('should parse email_6.txt (Bosh with missing weight)', async () => {
     //   const emailContent = loadEmailFile('email_6.txt');
@@ -143,21 +148,21 @@ describe('Request Parser Integration Tests', () => {
     //   expect(result.priority).toBe('NORMAL');
     // }, LLM_TIMEOUT);
 
-    it('should parse email_8.txt (urgent with specific date)', async () => {
-      const emailContent = loadEmailFile('email_8.txt');
-      const result = await parseEmailToRequest(emailContent);
+    // it('should parse email_8.txt (urgent with specific date)', async () => {
+    //   const emailContent = loadEmailFile('email_8.txt');
+    //   const result = await parseEmailToRequest(emailContent);
 
-      validateParsedRequest(result, 'Siemens');
+    //   validateParsedRequest(result, 'Siemens');
       
-      expect(result.pickupDate).not.toBeNull();
-      expect(result.deliveryDate).not.toBeNull();
-      expectDimensionsToMatch(result, [100, 120, 150]);
-      expect(result.weight).toBe(500);
-      expect(result.originAddress).toContain('Saarbrücken');
-      expect(result.destinationAddress).toContain('Sanctorum');
-      expect(result.contactEmail).toBe('siemens.shipping@siemens.com');
-      expect(result.priority).toBe('URGENT');
-    }, LLM_TIMEOUT);
+    //   expect(result.pickupDate).not.toBeNull();
+    //   expect(result.deliveryDate).not.toBeNull();
+    //   expectDimensionsToMatch(result, [100, 120, 150]);
+    //   expect(result.weight).toBe(500);
+    //   expect(result.originAddress).toContain('Saarbrücken');
+    //   expect(result.destinationAddress).toContain('Sanctorum');
+    //   expect(result.contactEmail).toBe('siemens.shipping@siemens.com');
+    //   expect(result.priority).toBe('URGENT');
+    // }, LLM_TIMEOUT);
   });
 
   // describe('parseEmailFile', () => {

@@ -43,7 +43,7 @@ async function hasFlightsBetweenAirports(origin: Airport, destination: Airport, 
  * @param destinationAirports List of destination airports
  * @returns List of airport pairs with flight availability
  */
-async function buildAirportPairs(
+export async function buildAirportPairs(
   originAirports: Airport[],
   destinationAirports: Airport[]
 ): Promise<AirportPair[]> {
@@ -51,7 +51,6 @@ async function buildAirportPairs(
   
   for (const originAirport of originAirports) {
     for (const destinationAirport of destinationAirports) {
-
       airportPairs.push({
         origin: originAirport,
         destination: destinationAirport,
@@ -73,7 +72,6 @@ export async function findFlightOptions(request: Request): Promise<AirportPairWi
     throw new Error('Request is missing geocoding information');
   }
 
-  // Find closest airports to origin and destination
   const originAirports: Airport[] = await findClosestAirports(
     request.originLatitude,
     request.originLongitude,
@@ -86,7 +84,6 @@ export async function findFlightOptions(request: Request): Promise<AirportPairWi
     5
   );
 
-  // Build and filter airport pairs
   const airportPairs = await buildAirportPairs(originAirports, destinationAirports);
   const airportPairsWithAirlines: AirportPairWithAirline[] = [];
   for (const pair of airportPairs) {
