@@ -4,7 +4,7 @@ import { buildAvailableRoutes } from "@/utils/routing";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -35,7 +35,6 @@ export async function POST(
       });
     }
 
-    // Calculate routes
     const routes = await buildAvailableRoutes(requestData);
 
     return NextResponse.json(routes);

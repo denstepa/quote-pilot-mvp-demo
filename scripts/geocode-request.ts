@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { geocodeAddress, GeoCoordinates } from '../src/utils/geocoding/google_geocoder';
+import { geocodeAddress, GeoCoordinatesWithAddress } from '../src/utils/geocoding/google_geocoder';
 
 const prisma = new PrismaClient();
 
@@ -17,8 +17,8 @@ async function main() {
   }
 
   const [origin, destination]: [
-    { coordinates: GeoCoordinates; error?: string },
-    { coordinates: GeoCoordinates; error?: string }
+    { coordinates: GeoCoordinatesWithAddress; error?: string },
+    { coordinates: GeoCoordinatesWithAddress; error?: string }
   ] = await Promise.all([
     geocodeAddress(request.originAddress),
     geocodeAddress(request.destinationAddress),

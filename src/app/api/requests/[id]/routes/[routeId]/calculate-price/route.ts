@@ -25,7 +25,6 @@ export async function POST(
 
     await calculateRoutePrice(route);
 
-    // Fetch the complete updated route with segments
     const completeUpdatedRoute = await prisma.routeOption.findUniqueOrThrow({
       where: { id: routeId },
       include: {

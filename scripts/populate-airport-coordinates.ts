@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client';
-import { geocodeAddress, type GeoCoordinates } from '../src/utils/geocoding/google_geocoder';
+import { geocodeAddress, type GeoCoordinatesWithAddress } from '../src/utils/geocoding/google_geocoder';
 
 const prisma = new PrismaClient();
 
 async function getAirportCoordinates(stationCode: string, countryCode: string): Promise<{
   name: string;
-  coordinates: GeoCoordinates;
+  coordinates: GeoCoordinatesWithAddress;
 } | null> {
   try {
     // Format the address for geocoding

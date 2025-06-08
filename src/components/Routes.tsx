@@ -15,28 +15,6 @@ interface RoutesProps {
   request: Request;
 }
 
-const getSegmentIcon = (type: string) => {
-  switch (type) {
-    case 'TRUCKING':
-      return <Truck className="h-4 w-4" />;
-    case 'AIR':
-      return <Plane className="h-4 w-4" />;
-    default:
-      return <Route className="h-4 w-4" />;
-  }
-};
-
-const getSegmentColor = (type: string) => {
-  switch (type) {
-    case 'TRUCKING':
-      return 'bg-blue-100 text-blue-800';
-    case 'AIR':
-      return 'bg-purple-100 text-purple-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
-
 export function Routes({ request }: RoutesProps) {
   const [routeOptions, setRouteOptions] = useState<RouteOptionWithSegments[] | undefined>(undefined);
   const [calculatingRoutes, setCalculatingRoutes] = useState(false);
@@ -47,6 +25,7 @@ export function Routes({ request }: RoutesProps) {
   // Load existing routes when component mounts
   useEffect(() => {
     loadExistingRoutes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request.id]);
 
   const loadExistingRoutes = async () => {

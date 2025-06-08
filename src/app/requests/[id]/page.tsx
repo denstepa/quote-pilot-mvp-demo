@@ -158,7 +158,7 @@ export default function RequestDetailPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Received</label>
-                <p className="text-sm">{formatDate(request.createdAt)}</p>
+                <p className="text-sm">{formatDate(request.createdAt as unknown as string)}</p>
               </div>
             </CardContent>
           </Card>
@@ -173,11 +173,11 @@ export default function RequestDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">Pickup Date</label>
-                  <p className="text-sm">{formatDate(request.pickupDate)}</p>
+                  <p className="text-sm">{formatDate(request.pickupDate as unknown as string)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Delivery Date</label>
-                  <p className="text-sm">{formatDate(request.deliveryDate)}</p>
+                  <p className="text-sm">{formatDate(request.deliveryDate as unknown as string)}</p>
                 </div>
               </div>
               <div>
