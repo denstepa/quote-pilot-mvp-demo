@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { RouteOption, RouteSegment } from "@prisma/client";
-import { Route, Truck, Plane, ArrowRight, MapPin, Calculator, Loader2 } from "lucide-react";
+import { Route, Truck, Plane, ArrowRight, MapPin, Calculator, Loader2, Clock, Calendar, Trophy, Zap } from "lucide-react";
 import { format } from "date-fns";
 
 type RouteOptionWithSegments = RouteOption & {
@@ -13,6 +13,8 @@ interface RouteOptionProps {
   route: RouteOptionWithSegments;
   onCalculatePrice: (routeId: string) => Promise<void>;
   isCalculatingPrice: boolean;
+  isCheapest?: boolean;
+  isFastest?: boolean;
 }
 
 const getSegmentIcon = (type: string) => {
@@ -37,9 +39,19 @@ const getSegmentColor = (type: string) => {
   }
 };
 
-export function RouteOption({ route, onCalculatePrice, isCalculatingPrice }: RouteOptionProps) {
+export function RouteOption({ route, onCalculatePrice, isCalculatingPrice, isCheapest = false, isFastest = false }: RouteOptionProps) {
+  const getCardStyling = () => {
+    if (isCheapest) {
+      return 'border-green-300 bg-green-50';
+    }
+    if (isFastest) {
+      return 'border-blue-300 bg-blue-50';
+    }
+    return '';
+  };
+
   return (
-    <Card className="border-2">
+    <Card className={`border-2 ${getCardStyling()}`}>
       <CardContent className="p-6">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
@@ -47,6 +59,18 @@ export function RouteOption({ route, onCalculatePrice, isCalculatingPrice }: Rou
               <Badge variant="outline" className="capitalize">
                 {route.status.toLowerCase()}
               </Badge>
+              {isCheapest && (
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                  <Trophy className="h-3 w-3 mr-1" />
+                  Cheapest
+                </Badge>
+              )}
+              {isFastest && (
+                <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                  <Zap className="h-3 w-3 mr-1" />
+                  Fastest
+                </Badge>
+              )}
               {route.totalPrice && (
                 <div className="text-sm font-medium">
                   {route.totalPrice.toFixed(2)} {route.currency}
@@ -71,6 +95,37 @@ export function RouteOption({ route, onCalculatePrice, isCalculatingPrice }: Rou
                 </>
               )}
             </Button>
+          </div>
+
+          {/* Route Summary Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <div className="text-sm">
+                <div className="text-gray-500">Pickup</div>
+                <div className="font-medium">
+                  {route.pickupAt ? format(new Date(route.pickupAt), 'MMM d, HH:mm') : '-'}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <div className="text-sm">
+                <div className="text-gray-500">Delivery</div>
+                <div className="font-medium">
+                  {route.deliveryAt ? format(new Date(route.deliveryAt), 'MMM d, HH:mm') : '-'}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-500" />
+              <div className="text-sm">
+                <div className="text-gray-500">Duration</div>
+                <div className="font-medium">
+                  {route.duration ? `${Math.floor(route.duration)}h ${Math.round((route.duration % 1) * 60)}m` : '-'}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -155,9 +210,6 @@ export function RouteOption({ route, onCalculatePrice, isCalculatingPrice }: Rou
                   </td>
                   <td colSpan={2} className="py-2 px-4 text-sm font-medium">
                     Total Price: {route.totalPrice ? `${route.totalPrice.toFixed(2)} ${route.currency}` : '-'}
-                  </td>
-                  <td className="py-2 px-4 text-sm text-right text-gray-500">
-                    Total Distance: {route.totalDistance ? `${route.totalDistance.toFixed(1)} km` : '-'}
                   </td>
                 </tr>
               </tfoot>

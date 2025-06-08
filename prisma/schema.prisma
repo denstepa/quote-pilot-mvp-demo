@@ -61,6 +61,10 @@ model Request {
   destinationCountryCode   String?  @map("destination_country_code")
 
   distance                 Float?   // in kilometers
+  cheapestRouteId         String?  @map("cheapest_route_id")
+  cheapestRoute           RouteOption? @relation("CheapestRoute", fields: [cheapestRouteId], references: [id])
+  fastestRouteId          String?  @map("fastest_route_id")
+  fastestRoute            RouteOption? @relation("FastestRoute", fields: [fastestRouteId], references: [id])
 
   // Route options
   routeOptions RouteOption[]
@@ -337,12 +341,19 @@ model RouteOption {
   estimatedDuration Float? @map("estimated_duration") // in hours
   totalPrice    Float?  @map("total_price")
   currency      String?
+  pickupAt      DateTime? @map("pickup_at")
+  deliveryAt    DateTime? @map("delivery_at")
+  duration      Float? @map("duration") // in hours
 
   // Status
   status      RouteStatus @default(INITIALIZED)
 
   // Segments of this route
   segments    RouteSegment[]
+
+  // Reverse relationships for cheapest/fastest route
+  cheapestForRequests Request[] @relation("CheapestRoute")
+  fastestForRequests  Request[] @relation("FastestRoute")
 
   @@map("route_options")
   @@index([requestId])

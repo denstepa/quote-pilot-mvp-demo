@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,8 +7,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Route, Loader2 } from "lucide-react";
 import type { RouteOption, RouteSegment, Request } from "@prisma/client";
 import { RouteOption as RouteOptionComponent } from "./RouteOption";
+import { RequestWithRouteOptions } from "../../types";
 
-// Extended type to include segments for RouteOption
 type RouteOptionWithSegments = RouteOption & {
   segments: RouteSegment[];
 };
@@ -21,8 +23,9 @@ export function Routes({ request }: RoutesProps) {
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
   const [calculatingPrices, setCalculatingPrices] = useState<Record<string, boolean>>({});
+  const [cheapestRouteId, setCheapestRouteId] = useState<string | null>(null);
+  const [fastestRouteId, setFastestRouteId] = useState<string | null>(null);
 
-  // Load existing routes when component mounts
   useEffect(() => {
     loadExistingRoutes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -34,14 +37,12 @@ export function Routes({ request }: RoutesProps) {
     try {
       const response = await fetch(`/api/requests/${request.id}/routes`);
       if (response.ok) {
-        const data = await response.json();
-        setRouteOptions(data.routes);
+        const data: RequestWithRouteOptions = await response.json();
+        setRouteOptions(data.routeOptions);
       } else {
-        // If routes don't exist, that's not an error - just means no routes calculated yet
         setRouteOptions([]);
       }
     } catch {
-      // If fetching fails, just set empty array - not a critical error
       setRouteOptions([]);
     } finally {
       setLoadingRoutes(false);
@@ -58,8 +59,11 @@ export function Routes({ request }: RoutesProps) {
       if (!response.ok) {
         throw new Error('Failed to calculate routes');
       }
-      const routes = await response.json();
-      setRouteOptions(routes);
+      const updatedRequest = await response.json();
+      
+      setRouteOptions(updatedRequest.routeOptions);
+      setCheapestRouteId(updatedRequest.cheapestRouteId);
+      setFastestRouteId(updatedRequest.fastestRouteId);
     } catch {
       setRouteError('Failed to calculate routes. Please try again.');
     } finally {
@@ -153,14 +157,30 @@ export function Routes({ request }: RoutesProps) {
 
         {routeOptions && routeOptions.length > 0 ? (
           <div className="space-y-6">
-            {routeOptions.map((route) => (
-              <RouteOptionComponent
-                key={route.id}
-                route={route}
-                onCalculatePrice={calculateRoutePrice}
-                isCalculatingPrice={calculatingPrices[route.id]}
-              />
-            ))}
+            {routeOptions
+              .slice()
+              .sort((a, b) => {
+                // Cheapest route comes first
+                if (a.id === cheapestRouteId) return -1;
+                if (b.id === cheapestRouteId) return 1;
+                
+                // Fastest route comes second
+                if (a.id === fastestRouteId) return -1;
+                if (b.id === fastestRouteId) return 1;
+                
+                // Keep original order for the rest
+                return 0;
+              })
+              .map((route) => (
+                <RouteOptionComponent
+                  key={route.id}
+                  route={route}
+                  onCalculatePrice={calculateRoutePrice}
+                  isCalculatingPrice={calculatingPrices[route.id]}
+                  isCheapest={route.id === cheapestRouteId}
+                  isFastest={route.id === fastestRouteId}
+                />
+              ))}
           </div>
         ) : routeOptions ? (
           <div className="text-center py-4 text-gray-500">

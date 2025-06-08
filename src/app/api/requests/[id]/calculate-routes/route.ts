@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
 import { buildAvailableRoutes } from "@/utils/routing";
-import { calculateRoutePrice } from "@/utils/pricing";
-import { RouteOptionWithSegments } from "../../../../../../types";
+import { calculateAllRequestRoutes } from "@/utils/pricing";
 
 export async function POST(
   request: NextRequest,
@@ -37,15 +36,11 @@ export async function POST(
       });
     }
 
-    const routes: RouteOptionWithSegments[] = await buildAvailableRoutes(requestData);
+    await buildAvailableRoutes(requestData);
 
-    const routesWithPrices: RouteOptionWithSegments[] = [];
-    for (const route of routes) {
-      const routeWithPrice = await calculateRoutePrice(route);
-      routesWithPrices.push(routeWithPrice);
-    }
+    const updatedRequest = await calculateAllRequestRoutes(requestData);
 
-    return NextResponse.json(routesWithPrices);
+    return NextResponse.json(updatedRequest);
   } catch (error) {
     console.error("Error calculating routes:", error);
     return NextResponse.json(

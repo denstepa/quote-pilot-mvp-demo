@@ -5,6 +5,20 @@ export type RouteSegment = PrismaRouteSegment & {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+const requestWithRouteOptions = Prisma.validator<Prisma.RequestDefaultArgs>()({
+  include: {
+    cheapestRoute: true,
+    fastestRoute: true,
+    routeOptions: {
+      include: {
+        segments: {
+        }
+      }
+    }
+  }
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routeOptionWithSegments = Prisma.validator<Prisma.RouteOptionDefaultArgs>()({ 
   include: {
     segments: true,
@@ -12,5 +26,7 @@ const routeOptionWithSegments = Prisma.validator<Prisma.RouteOptionDefaultArgs>(
 });
 
 export type RouteOptionWithSegments = Prisma.RouteOptionGetPayload<typeof routeOptionWithSegments>;
+
+export type RequestWithRouteOptions = Prisma.RequestGetPayload<typeof requestWithRouteOptions>;
 
 export { RouteStatus, SegmentType };
