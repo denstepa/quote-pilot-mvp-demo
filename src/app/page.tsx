@@ -91,7 +91,7 @@ export default function Home() {
               </li>
               <li className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                <span>OpenAI (gpt-4-mini) for parsing emails</span>
+                <span>OpenAI (gpt-4o) for parsing emails</span>
               </li>
               <li className="flex items-center space-x-2">
                 <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
