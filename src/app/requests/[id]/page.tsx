@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2, RefreshCw, Trash2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2, RefreshCw, Trash2, Clock } from "lucide-react";
 import Routes from "@/components/Routes";
 import { RequestWithRouteOptions } from "../../../../types";
 
@@ -34,6 +35,7 @@ export default function RequestDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [reparsing, setReparsing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (params.id) {
@@ -57,6 +59,33 @@ export default function RequestDetailPage() {
       setLoading(false);
     }
   };
+
+  // Background status polling when PENDING
+  useEffect(() => {
+    if (request?.status === 'PENDING') {
+      // Simulate progress bar animation
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return 90; // Don't complete until status changes
+          return prev + Math.random() * 10;
+        });
+      }, 1000);
+
+      // Poll for status updates
+      const statusInterval = setInterval(() => {
+        if (params.id) {
+          fetchRequest(params.id as string);
+        }
+      }, 5000); // Check every 5 seconds
+
+      return () => {
+        clearInterval(progressInterval);
+        clearInterval(statusInterval);
+      };
+    } else {
+      setProgress(0); // Reset progress when not pending
+    }
+  }, [request?.status, params.id]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -120,6 +149,23 @@ export default function RequestDetailPage() {
     } finally {
       setDeleting(false);
     }
+  };
+
+  // Simple Progress Component
+  const PendingProgress = () => {
+    if (request?.status !== 'PENDING') return null;
+
+    return (
+      <Card className="mb-6 border-yellow-200 bg-yellow-50">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-3 mb-3">
+            <Clock className="h-4 w-4 text-yellow-600" />
+            <span className="text-sm font-medium text-yellow-800">Processing request...</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </CardContent>
+      </Card>
+    );
   };
 
   if (loading) {
@@ -196,6 +242,10 @@ export default function RequestDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Add the simple progress bar */}
+      <PendingProgress />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <Card>

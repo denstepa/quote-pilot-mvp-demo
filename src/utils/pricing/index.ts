@@ -1,4 +1,4 @@
-import { RouteStatus, SegmentType, Request } from "@prisma/client";
+import { RouteStatus, SegmentType, Request, EmailStatus } from "@prisma/client";
 import { RequestWithRouteOptions, RouteOptionWithSegments } from "../../../types";
 import { calculateTruckingRouteSegmentPrice } from "./trucking-price";
 import { calculateAirRouteSegmentPrice } from "./air-pricing";
@@ -89,6 +89,7 @@ export async function calculateAllRequestRoutes(request: Request): Promise<Reque
       data: {
         cheapestRouteId: cheapestRoute.id,
         fastestRouteId: fastestRoute.id,
+        status: EmailStatus.QUOTED,
       },
       include: {
         cheapestRoute: true,
