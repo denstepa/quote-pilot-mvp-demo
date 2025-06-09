@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Package, Mail, Building2, RefreshCw, Trash2 } from "lucide-react";
 import Routes from "@/components/Routes";
 import { RequestWithRouteOptions } from "../../../../types";
 
@@ -33,6 +33,7 @@ export default function RequestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reparsing, setReparsing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -99,6 +100,28 @@ export default function RequestDetailPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!request) return;
+    
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/requests/${request.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        router.push('/requests');
+      } else {
+        setError('Failed to delete request');
+      }
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      setError('Failed to delete request');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -154,6 +177,16 @@ export default function RequestDetailPage() {
                 {reparsing ? 'Re-parsing...' : 'Re-parse Email'}
               </Button>
             )}
+            <Button
+              onClick={handleDelete}
+              disabled={deleting}
+              variant="destructive"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
             <Badge className={statusColors[request.status as keyof typeof statusColors]}>
               {request.status}
             </Badge>

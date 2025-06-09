@@ -135,16 +135,16 @@ export default function RequestsPage() {
                         </div>
                       </div>
                     </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm">
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
                       <div className="flex items-start gap-1 text-gray-600">
-                      <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                      <div className="max-w-48 leading-tight">
-                        {request.destinationAddress.split(',').map((part, index) => (
-                          <div key={index}>{part.trim()}</div>
-                        ))}
-                      </div>
+                        <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <div className="max-w-48 leading-tight">
+                          {request.destinationAddress.split(',').map((part, index) => (
+                            <div key={index}>{part.trim()}</div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </TableCell>
