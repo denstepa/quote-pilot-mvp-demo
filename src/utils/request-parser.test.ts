@@ -2,7 +2,6 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseEmailToRequest, ParsedRequest } from './request-parser';
-// Note: parseEmailFile and parseMultipleEmails are used in commented tests
 
 describe('Request Parser Integration Tests', () => {
   // Helper function to load email files

@@ -12,7 +12,6 @@ export async function POST(
   try {
     const { id } = await params;
 
-    // Get the existing request
     const existingRequest = await prisma.request.findUnique({
       where: { id },
       include: {
@@ -31,23 +30,18 @@ export async function POST(
       );
     }
 
-    // Update status to processing
     await prisma.request.update({
       where: { id },
       data: { status: 'PROCESSING' }
     });
 
     try {
-      // Re-parse the email content
       console.log("Re-parsing email content for transport request...");
       const emailContent = `Subject: ${existingRequest.subject}\n\n${existingRequest.rawBody}`;
       const parsedRequest = await parseEmailToRequest(emailContent);
       
-      // Re-geocode addresses
-      const [originResult, destinationResult] = await Promise.all([
-        geocodeAddress(parsedRequest.originAddress),
-        geocodeAddress(parsedRequest.destinationAddress)
-      ]);
+      const originResult = await geocodeAddress(parsedRequest.originAddress);
+      const destinationResult = await geocodeAddress(parsedRequest.destinationAddress);
 
       if (originResult.error || destinationResult.error) {
         throw new Error(
@@ -55,7 +49,6 @@ export async function POST(
         );
       }
 
-      // Delete existing route options
       if (existingRequest.routeOptions.length > 0) {
         await prisma.routeOption.deleteMany({
           where: {
@@ -64,7 +57,6 @@ export async function POST(
         });
       }
 
-      // Update request with new parsed data
       const updatedRequest = await prisma.request.update({
         where: { id },
         data: {
@@ -97,13 +89,11 @@ export async function POST(
           destinationPlaceId: destinationResult.coordinates.placeId,
           destinationCountryCode: destinationResult.coordinates.countryCode,
 
-          // Reset route references
           cheapestRouteId: null,
           fastestRouteId: null,
         }
       });
 
-      // Rebuild and calculate routes
       console.log("Building available routes...");
       await buildAvailableRoutes(updatedRequest);
       
@@ -118,7 +108,6 @@ export async function POST(
     } catch (error) {
       console.error("Error during re-parsing:", error);
       
-      // Update status to failed
       await prisma.request.update({
         where: { id },
         data: { status: 'FAILED' }

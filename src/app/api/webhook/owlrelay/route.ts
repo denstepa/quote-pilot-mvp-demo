@@ -81,16 +81,8 @@ export async function POST(req: NextRequest) {
         console.log("Parsing email content for transport request...");
         const parsedRequest = await parseEmailToRequest(`Subject: ${emailMetadata.subject}\n\n${emailContent}`);
         
-        const [originResult, destinationResult] = await Promise.all([
-          geocodeAddress(parsedRequest.originAddress),
-          geocodeAddress(parsedRequest.destinationAddress)
-        ]);
-
-        if (originResult.error || destinationResult.error) {
-          throw new Error(
-            `Geocoding failed: ${originResult.error || ''} ${destinationResult.error || ''}`
-          );
-        }
+        const originResult = await geocodeAddress(parsedRequest.originAddress);
+        const destinationResult = await geocodeAddress(parsedRequest.destinationAddress);
 
         const updatedRequest = await prisma.request.update({
           where: { id: initialRequest.id },

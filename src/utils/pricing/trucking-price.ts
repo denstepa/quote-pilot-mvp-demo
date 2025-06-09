@@ -5,7 +5,9 @@ import prisma from "@/libs/prisma";
 import moment from 'moment';
 import { convertToEur, type SupportedCurrency } from "@/utils/currency";
 
-export const calculateTruckingRouteSegmentDistance = async (segment: RouteSegment): Promise<number> => {
+const GROUND_SPEED = 70;
+
+export async function calculateTruckingRouteSegmentDistance(segment: RouteSegment): Promise<number> {
   if (!segment.originLatitude || !segment.originLongitude || 
       !segment.destinationLatitude || !segment.destinationLongitude) {
     throw new Error('Route segment is missing required coordinates');
@@ -24,7 +26,7 @@ export const calculateTruckingRouteSegmentDistance = async (segment: RouteSegmen
   return calculateDistanceBetweenCoordinates(origin, destination);
 }
 
-export const calculateTruckingRouteSegmentPrice = async (segment: RouteSegment, startTime: Date): Promise<RouteSegment> => {
+export async function calculateTruckingRouteSegmentPrice(segment: RouteSegment, startTime: Date): Promise<RouteSegment> {
   const distance = await calculateTruckingRouteSegmentDistance(segment);
 
   if (!segment.originCountryCode || !segment.destinationCountryCode) {
@@ -67,5 +69,5 @@ export const calculateTruckingRouteSegmentPrice = async (segment: RouteSegment, 
 }
 
 const calculateTruckingRouteSegmentDuration = (distance: number): number => {
-  return distance / 70;
+  return distance / GROUND_SPEED;
 }

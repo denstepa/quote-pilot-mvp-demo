@@ -16,13 +16,8 @@ async function main() {
     process.exit(1);
   }
 
-  const [origin, destination]: [
-    { coordinates: GeoCoordinatesWithAddress; error?: string },
-    { coordinates: GeoCoordinatesWithAddress; error?: string }
-  ] = await Promise.all([
-    geocodeAddress(request.originAddress),
-    geocodeAddress(request.destinationAddress),
-  ]);
+  const origin = await geocodeAddress(request.originAddress);
+  const destination = await geocodeAddress(request.destinationAddress);
 
   if (origin.error || destination.error) {
     console.error('Geocoding error:', origin.error || destination.error);

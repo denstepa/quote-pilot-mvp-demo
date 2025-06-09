@@ -43,9 +43,9 @@ export type ParsedRequest = {
 };
 
 
-export const parseEmailToRequest = async (
+export async function parseEmailToRequest(
   emailContent: string,
-): Promise<ParsedRequest> => {
+): Promise<ParsedRequest> {
   const model = openai('gpt-4o');
 
   const { object } = await generateObject({
@@ -103,24 +103,13 @@ export const parseEmailToRequest = async (
     ],
   });
 
-    console.log('object', object);
-
   return object;
-};
+}
 
-export const parseEmailFile = async (
+export async function parseEmailFile(
   filePath: string,
-): Promise<ParsedRequest> => {
+): Promise<ParsedRequest> {
   const fs = await import('fs/promises');
   const emailContent = await fs.readFile(filePath, 'utf-8');
   return parseEmailToRequest(emailContent);
-};
-
-export const parseMultipleEmails = async (
-  emailContents: string[],
-): Promise<ParsedRequest[]> => {
-  const results = await Promise.all(
-    emailContents.map(content => parseEmailToRequest(content))
-  );
-  return results;
 };

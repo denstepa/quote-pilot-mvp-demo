@@ -4,7 +4,7 @@ import { findFirstAvailableFlight } from "./available-flights";
 import { calculateFlightPrice } from "./flight-route-price";
 import moment from 'moment';
 
-export const calculateAirRouteSegmentPrice = async (segment: RouteSegment, request: Request, startTime: Date): Promise<RouteSegment> => {
+export async function calculateAirRouteSegmentPrice(segment: RouteSegment, request: Request, startTime: Date): Promise<RouteSegment> {
   if (!segment.originAirportCode || !segment.destinationAirportCode) {
     throw new Error('Route segment is missing required airport codes');
   }
