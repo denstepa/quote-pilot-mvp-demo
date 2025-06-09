@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +51,7 @@ const priorityColors = {
 export default function RequestsPage() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     fetchRequests();
@@ -122,7 +124,11 @@ export default function RequestsPage() {
             </TableHeader>
             <TableBody>
               {requests.map((request) => (
-                <TableRow key={request.id}>
+                <TableRow 
+                  key={request.id} 
+                  className="cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => router.push(`/requests/${request.id}`)}
+                >
                   <TableCell className="font-medium">{request.company}</TableCell>
                   <TableCell>
                     <div className="text-sm">
