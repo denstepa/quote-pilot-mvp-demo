@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { geocodeAddress, type GeoCoordinatesWithAddress } from '../src/utils/geocoding/google_geocoder';
+import { geocodeAddress, type GeoCoordinatesWithAddress } from '../src/utils/geocoding/google-geocoder';
 
 const prisma = new PrismaClient();
 

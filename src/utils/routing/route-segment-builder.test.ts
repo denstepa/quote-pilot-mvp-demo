@@ -1,5 +1,5 @@
 import { Airport } from '@prisma/client';
-import { buildAirportPairs } from './route_segment_builder';
+import { buildAirportPairs } from './route-segment-builder';
 
 describe('buildAirportPairs', () => {
   it('should create all possible pairs between origin and destination airports', async () => {

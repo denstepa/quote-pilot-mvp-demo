@@ -1,5 +1,5 @@
 import { Airport, PrismaClient, Request } from '@prisma/client';
-import { findClosestAirports } from './airport_finder';
+import { findClosestAirports } from './airport-finder';
 
 const prisma = new PrismaClient();
 

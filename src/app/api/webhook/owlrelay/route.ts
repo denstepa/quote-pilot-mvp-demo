@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/libs/prisma";
 import { parseEmailToRequest } from "@/utils/request-parser";
-import { geocodeAddress } from "@/utils/geocoding/google_geocoder";
+import { geocodeAddress } from "@/utils/geocoding/google-geocoder";
 import { buildAvailableRoutes } from "@/utils/routing";
 import { calculateAllRequestRoutes } from "@/utils/pricing";
 

@@ -1,5 +1,5 @@
 import { RouteSegment } from "@prisma/client";
-import { calculateDistanceBetweenCoordinates, type GeoCoordinates } from "@/utils/geocoding/google_geocoder";
+import { calculateDistanceBetweenCoordinates, type GeoCoordinates } from "@/utils/geocoding/google-geocoder";
 import { getCountryName } from "@/utils/countries";
 import prisma from "@/libs/prisma";
 import moment from 'moment';

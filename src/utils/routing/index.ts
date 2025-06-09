@@ -1,5 +1,5 @@
 import { Request, PrismaClient, RouteStatus } from '@prisma/client';
-import { findFlightOptions } from './route_segment_builder';
+import { findFlightOptions } from './route-segment-builder';
 import { RouteOptionWithSegments } from '../../../types';
 
 const prisma = new PrismaClient();
