@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseEmailToRequest, ParsedRequest } from './request-parser';
